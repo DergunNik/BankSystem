@@ -1,4 +1,4 @@
-﻿using BankSystem.Domain.Entities.BaseClasses;
+﻿using BankSystem.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

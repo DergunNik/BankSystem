@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 
 namespace BrigadeManager.Domain.Abstractions
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
         IRepository<Account> AccountRepository { get; }
-        IRepository<IndividualUser> UserRepository { get; }
+        IRepository<User> UserRepository { get; }
         IRepository<Enterprise> EnterpriseRepository { get; }
         IRepository<Installment> InstallmentRepository { get; }
         IRepository<Loan> LoanRepository { get; }
         IRepository<Transfer> TransferRepository { get; }
-        public Task SaveAllAsync();
+        void Commit();
+        void Rollback();
+        public Task<bool> DatabaseExistsAsync();
         public Task DeleteDataBaseAsync();
         public Task CreateDataBaseAsync();
     }

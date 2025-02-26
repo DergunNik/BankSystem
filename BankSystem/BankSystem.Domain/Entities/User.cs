@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Domain.Entities
 {
-    public class IndividualUser : Abstactions.BankRelatedEntity
+    public class User : BankRelatedEntity
     {
         public string FullName { get; set; }
         public string PassportSeriesAndNumber { get; set; }
