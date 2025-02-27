@@ -17,4 +17,5 @@ namespace BankSystem.Persistence
                     .AddSingleton<IUnitOfWork, UnitOfWork.UnitOfWork>();
             return services;
         }
+    }
 }
