@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Domain.Entities
 {
-    public class User : BankRelatedEntity
+    public class User : BankRelatedEntity, IRequestable
     {
         public string FullName { get; set; }
         public string PassportSeriesAndNumber { get; set; }
@@ -15,5 +15,8 @@ namespace BankSystem.Domain.Entities
         public string Email { get; set; }
         public bool IsActive { get; set; }
         public Enums.UserRole UserRole { get; set; }
+        public bool IsApproved { get; set; }
+        public DateTime RequestDate { get; set; }
+        public DateTime AnswerDate { get; set; }
     }
 }

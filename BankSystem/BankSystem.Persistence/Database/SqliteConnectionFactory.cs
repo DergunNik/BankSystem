@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Persistence.Database
 {
-    public class SqlLiteConnectionFactory(string connectionString) : IDbConnectionFactory
+    public class SqliteConnectionFactory(string connectionString) : IDbConnectionFactory
     {
         private string _connectionString = connectionString;
         public async Task<IDbConnection> CreateConnectionAsync()

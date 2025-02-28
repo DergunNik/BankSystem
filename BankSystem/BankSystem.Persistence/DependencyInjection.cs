@@ -13,7 +13,8 @@ namespace BankSystem.Persistence
     {
         public static IServiceCollection AddPersistence(this IServiceCollection services, string dbConnectionString)
         {
-            services.AddSingleton<IDbConnectionFactory>(_ => new SqlLiteConnectionFactory(dbConnectionString))
+            services.AddSingleton<IDbConnectionFactory>(_ => new SqliteConnectionFactory(dbConnectionString))
+                    .AddSingleton<IDbInitializer, SqliteInitializer>()
                     .AddSingleton<IUnitOfWork, UnitOfWork.UnitOfWork>();
             return services;
         }

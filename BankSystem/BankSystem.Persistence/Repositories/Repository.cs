@@ -42,6 +42,13 @@ namespace BankSystem.Persistence.Repositories
             return result.ToList().AsReadOnly();
         }
 
+        public async Task<IReadOnlyList<T>> ListAllFromBankAsync(int bankId, CancellationToken _ = default)
+        {
+            var query = $"SELECT * FROM {typeof(T).Name} WHERE BankId = {bankId}";
+            var result = await _connection.QueryAsync<T>(query, transaction: _transaction);
+            return result.ToList().AsReadOnly();
+        }
+
         public async Task AddAsync(T entity, CancellationToken cance_llationToken = default)
         {
             var tableName = typeof(T).Name;
@@ -113,10 +120,32 @@ namespace BankSystem.Persistence.Repositories
             }
         }
 
+        public async Task<IReadOnlyList<T>> ListWhereFromBank(int bankId, string column, object value, CancellationToken _ = default)
+        {
+            var query = $"SELECT * FROM {typeof(T).Name} WHERE {column} = @{column} AND BankId = {bankId}";
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add(column, value);
+                var res = await _connection.QueryAsync<T>(query, parameters, _transaction);
+                return res.ToList().AsReadOnly();
+            }
+            catch (Exception ex)
+            {
+                return Array.Empty<T>().ToList().AsReadOnly();
+            }
+        }
+
         public async Task DeleteAsync(T entity, CancellationToken _ = default)
         {
             var query = $"DELETE FROM {typeof(T).Name} WHERE Id = @Id";
             await _connection.ExecuteAsync(query, new { Id = entity.Id }, _transaction);
+        }
+
+        public async Task DeleteAsync(int id, CancellationToken _ = default)
+        {
+            var query = $"DELETE FROM {typeof(T).Name} WHERE Id = @Id";
+            await _connection.ExecuteAsync(query, new { Id = id }, _transaction);
         }
     }
 }

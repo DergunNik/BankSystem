@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Persistence.Database
 {
-    public class SqlLiteInitializer : IDbInitializer
+    public class SqliteInitializer : IDbInitializer
     {
         private IDbConnection _connection;
 
-        public SqlLiteInitializer(IDbConnectionFactory dbConnectionFactory)
+        public SqliteInitializer(IDbConnectionFactory dbConnectionFactory)
         {
             _connection = dbConnectionFactory.CreateConnectionAsync().Result;
         }

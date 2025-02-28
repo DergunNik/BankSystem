@@ -10,4 +10,8 @@
     <ProjectReference Include="..\BankSystem.Domain\BankSystem.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="QuerisAndCommands\" />
+  </ItemGroup>
+
 </Project>
