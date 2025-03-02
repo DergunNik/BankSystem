@@ -16,7 +16,7 @@ namespace BankSystem.Persistence.Database
 
         public SqliteInitializer(IDbConnectionFactory dbConnectionFactory)
         {
-            _connection = dbConnectionFactory.CreateConnectionAsync().Result;
+            _connection = dbConnectionFactory.CreateConnection();
         }
 
         public async Task InitializeAsync()

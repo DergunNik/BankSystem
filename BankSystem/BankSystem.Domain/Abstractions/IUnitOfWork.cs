@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BrigadeManager.Domain.Abstractions
+namespace BankSystem.Domain.Abstractions
 {
     public interface IUnitOfWork : IDisposable
     {

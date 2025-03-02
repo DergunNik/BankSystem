@@ -1,21 +1,19 @@
 ﻿using BankSystem.Persistence.Database;
-using BrigadeManager.Domain.Abstractions;
+using BankSystem.Domain.Abstractions;
+using BankSystem.Persistence.Settings;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BankSystem.Persistence
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddPersistence(this IServiceCollection services, string dbConnectionString)
+        public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddSingleton<IDbConnectionFactory>(_ => new SqliteConnectionFactory(dbConnectionString))
-                    .AddSingleton<IDbInitializer, SqliteInitializer>()
-                    .AddSingleton<IUnitOfWork, UnitOfWork.UnitOfWork>();
+            services.Configure<DbConnectionSettings>(configuration.GetSection("DbConnectionSettings"))
+                    .AddScoped<IDbConnectionFactory, SqliteConnectionFactory>()
+                    .AddScoped<IDbInitializer, SqliteInitializer>()
+                    .AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
             return services;
         }
     }

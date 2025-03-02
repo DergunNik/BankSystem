@@ -71,10 +71,4 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\BankSystem.Aplication\BankSystem.Aplication.csproj" />
-	  <ProjectReference Include="..\BankSystem.Domain\BankSystem.Domain.csproj" />
-	  <ProjectReference Include="..\BankSystem.Persistence\BankSystem.Persistence.csproj" />
-	</ItemGroup>
-
 </Project>

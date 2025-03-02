@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Aplication.Services
+namespace BankSystem.Persistence.Settings
 {
-    class LoanService
+    public class DbConnectionSettings
     {
+        public string SqliteConnection { get; set; }
     }
 }

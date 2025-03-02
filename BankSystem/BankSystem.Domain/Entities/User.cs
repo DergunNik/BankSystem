@@ -18,5 +18,6 @@ namespace BankSystem.Domain.Entities
         public bool IsApproved { get; set; }
         public DateTime RequestDate { get; set; }
         public DateTime AnswerDate { get; set; }
+        public string PasswordHash { get; set; }
     }
 }

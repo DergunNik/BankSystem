@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BankSystem.Persistence.Settings;
+using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -7,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Persistence.Database
 {
-    public class SqliteConnectionFactory(string connectionString) : IDbConnectionFactory
+    public class SqliteConnectionFactory(IOptions<DbConnectionSettings> options) : IDbConnectionFactory
     {
-        private string _connectionString = connectionString;
-        public async Task<IDbConnection> CreateConnectionAsync()
+        private string _connectionString = options.Value.SqliteConnection;
+        public IDbConnection CreateConnection()
         {
             var connection = new Microsoft.Data.Sqlite.SqliteConnection(_connectionString);
             return connection;

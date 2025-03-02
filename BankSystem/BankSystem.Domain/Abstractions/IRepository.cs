@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BrigadeManager.Domain.Abstractions
+namespace BankSystem.Domain.Abstractions
 {
     public interface IRepository<T> where T : Entity
     {

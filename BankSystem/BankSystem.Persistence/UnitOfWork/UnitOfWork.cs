@@ -1,7 +1,7 @@
 ﻿using BankSystem.Domain.Entities;
 using BankSystem.Persistence.Database;
 using BankSystem.Persistence.Repositories;
-using BrigadeManager.Domain.Abstractions;
+using BankSystem.Domain.Abstractions;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace BankSystem.Persistence.UnitOfWork
 
         public UnitOfWork(IDbConnectionFactory dbConnectionFactory)
         {
-            _connection = dbConnectionFactory.CreateConnectionAsync().Result;
+            _connection = dbConnectionFactory.CreateConnection();
             _connection.Open();
         }
 

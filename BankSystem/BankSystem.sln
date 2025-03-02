@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.Persistence", "B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.UI", "BankSystem.UI\BankSystem.UI.csproj", "{60BC0394-B003-4563-8A78-D759BD7B55E1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.WebAPI", "BankSystem.WebAPI\BankSystem.WebAPI.csproj", "{3976D44A-76CE-4AC7-BA12-04275E5B3714}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{60BC0394-B003-4563-8A78-D759BD7B55E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60BC0394-B003-4563-8A78-D759BD7B55E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60BC0394-B003-4563-8A78-D759BD7B55E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3976D44A-76CE-4AC7-BA12-04275E5B3714}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3976D44A-76CE-4AC7-BA12-04275E5B3714}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3976D44A-76CE-4AC7-BA12-04275E5B3714}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3976D44A-76CE-4AC7-BA12-04275E5B3714}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

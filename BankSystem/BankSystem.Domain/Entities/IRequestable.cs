@@ -10,6 +10,6 @@ namespace BankSystem.Domain.Entities
     {
         bool IsApproved { get; set; }
         DateTime RequestDate { get; set; }
-        DateTime StartDate { get; set; }
+        DateTime AnswerDate { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using BankSystem.Domain.Entities;
 using BankSystem.Persistence.Database;
-using BrigadeManager.Domain.Abstractions;
+using BankSystem.Domain.Abstractions;
 using Dapper;
 using System;
 using System.Collections.Generic;

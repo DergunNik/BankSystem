@@ -42,7 +42,12 @@ namespace BankSystem.Domain.Enums
         /// The Administrator role allows the user to view all action logs (logs can be stored in a separate file and encrypted),
         /// and cancel all actions performed by users in the system.
         /// </summary>
-        Administrator
+        Administrator,
+
+        /// <summary>
+        /// These users are not allowed to log in to the system.
+        /// <summary
+        BannedOrNotExisting
     }
 
 }
