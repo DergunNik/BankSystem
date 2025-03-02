@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq.Expressions;
 
 namespace BankSystem.Aplication.Services
 {
@@ -26,7 +27,7 @@ namespace BankSystem.Aplication.Services
 
         public async Task<string> LoginAsync(string email, string password)
         {
-            var user = await _unitOfWork.GetRepository<User>().ListWhere(nameof(User.Email), email);
+            var user = await _unitOfWork.GetRepository<User>().ListAsync(user => user.Email == email);
             if (user.Count != 0 && Argon2.Verify(user[0].PasswordHash, password))
             {
                 if (user[0].IsApproved)
@@ -47,13 +48,11 @@ namespace BankSystem.Aplication.Services
         public async Task RegisterAsync(User user)
         {
             var repository = _unitOfWork.GetRepository<User>();
-            var thisEmailUserList = await repository.ListWhere(nameof(User.Email), user.Email);
+            var thisEmailUserList = await repository.ListAsync(user => user.Email == user.Email);
             if (thisEmailUserList.ToList<User>().Count == 0)
             {
                 user.PasswordHash = Argon2.Hash(user.PasswordHash);
-                user.IsApproved = false;
-                _requestService.CreateRequest(user);
-                await repository.AddAsync(user);
+                await _requestService.CreateRequestAsync(user);
             }
             else
             {

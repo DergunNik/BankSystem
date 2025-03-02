@@ -10,9 +10,9 @@ namespace BankSystem.Aplication.ServiceInterfaces
 {
     public interface IRequestService
     {
-        void CreateRequest(IRequestable requestTarget);
-        void ApproveRequest(IRequestable requestTarget);
-        void RejectRequest(IRequestable requestTarget);
+        Task CreateRequestAsync(IRequestable requestTarget);
+        Task ApproveRequestAsync(IRequestable requestTarget);
+        Task RejectRequestAsync(IRequestable requestTarget);
         IReadOnlyList<IRequestable> GetAllRequests();
         IReadOnlyList<IRequestable> GetRelevantRequests(UserRole recepient);
     }

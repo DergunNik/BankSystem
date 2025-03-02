@@ -19,15 +19,38 @@ namespace BankSystem.Aplication.Services
 
         readonly IUnitOfWork _unitOfWork;
 
-        public void ApproveRequest(IRequestable requestTarget)
+        public void ApproveRequestAsync(IRequestable requestTarget)
         {
-            throw new NotImplementedException();
+            _unitOfWork.BeginTransaction();
+            var requests = _unitOfWork.GetRepository<Request>();
+            Type targetType = requestTarget.GetType();
+            var repositoryType = typeof(IRepository<>).MakeGenericType(targetType);
+            var repository = _unitOfWork.GetType()
+                                        .GetMethod("GetRepository")
+                                        .MakeGenericMethod(targetType)
+                                        .Invoke(_unitOfWork, null);
+            _unitOfWork.CommitTransactionAsync();
         }
 
-        public void CreateRequest(IRequestable requestTarget)
+        public async Task CreateRequestAsync(IRequestable requestTarget)
         {
-            _unitOfWork.GetRepository<Type(requestTarget.GetType().Name + "Request")>();
+            _unitOfWork.BeginTransaction();
 
+            Type targetType = requestTarget.GetType();
+            var repositoryType = typeof(IRepository<>).MakeGenericType(targetType);
+            var repository = _unitOfWork.GetType()
+                .GetMethod("GetRepository")
+                .MakeGenericMethod(targetType)
+                .Invoke(_unitOfWork, null);
+
+            dynamic typedRepository = Convert.ChangeType(repository, repositoryType);
+            var addMethod = repositoryType.GetMethod("AddAsync");
+            if (addMethod != null)
+            {
+                await (Task)addMethod.Invoke(typedRepository, new object[] { requestTarget });
+            }
+
+            await _unitOfWork.CommitTransactionAsync();
         }
 
         public IReadOnlyList<IRequestable> GetAllRequests()

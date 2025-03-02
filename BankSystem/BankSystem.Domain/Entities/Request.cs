@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Domain.Entities.Requests
+namespace BankSystem.Domain.Entities
 {
-    public interface IRequest
+    public class Request : BankRelatedEntity
     {
         public int SenderId { get; set; }
+        public RequestType RequestType { get; set; }
         public bool IsChecked { get; set; }
         public int RequestEntityId { get; set; }
     }
