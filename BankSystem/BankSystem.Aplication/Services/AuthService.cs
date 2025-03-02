@@ -11,15 +11,33 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Aplication.Services
 {
-    public class AuthService(IUnitOfWork unitOfWork, IJwtService jwtService) : IAuthService
+    public class AuthService : IAuthService
     {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IJwtService _jwtService;
+        private readonly IRequestService _requestService;
+
+        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IRequestService requestService)
+        {
+            _unitOfWork = unitOfWork;
+            _jwtService = jwtService;
+            _requestService = requestService;
+        }
+
         public async Task<string> LoginAsync(string email, string password)
         {
-            var user = await unitOfWork.GetRepository<User>().ListWhere(nameof(User.Email), email);
+            var user = await _unitOfWork.GetRepository<User>().ListWhere(nameof(User.Email), email);
             if (user.Count != 0 && Argon2.Verify(user[0].PasswordHash, password))
             {
-                return jwtService.GenerateToken(user[0]);
-            } 
+                if (user[0].IsApproved)
+                {
+                    return _jwtService.GenerateToken(user[0]);
+                } 
+                else
+                {
+                    throw new Exception("This user is not approved");
+                }
+            }
             else
             {
                 throw new Exception("Invalid email or password");
@@ -28,11 +46,13 @@ namespace BankSystem.Aplication.Services
 
         public async Task RegisterAsync(User user)
         {
-            var repository = unitOfWork.GetRepository<User>();
+            var repository = _unitOfWork.GetRepository<User>();
             var thisEmailUserList = await repository.ListWhere(nameof(User.Email), user.Email);
             if (thisEmailUserList.ToList<User>().Count == 0)
             {
                 user.PasswordHash = Argon2.Hash(user.PasswordHash);
+                user.IsApproved = false;
+                _requestService.CreateRequest(user);
                 await repository.AddAsync(user);
             }
             else

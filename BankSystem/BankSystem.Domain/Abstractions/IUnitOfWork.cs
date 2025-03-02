@@ -1,4 +1,5 @@
 ﻿using BankSystem.Domain.Entities;
+using BankSystem.Domain.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,9 @@ namespace BankSystem.Domain.Abstractions
 {
     public interface IUnitOfWork : IDisposable
     {
-        void BeginTransaction();
-        void Commit();
-        void Rollback();
-        IRepository<T> GetRepository<T>() where T : Entity;
+        IRepository<T> GetRepository<T>() where T : Entity; 
+        public Task SaveAllAsync();
+        public Task DeleteDataBaseAsync();
+        public Task CreateDataBaseAsync();
     }
 }

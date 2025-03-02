@@ -9,65 +9,23 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BankSystem.Persistence.Data;
 
 namespace BankSystem.Persistence.UnitOfWork
 {
-    public class UnitOfWork : IUnitOfWork
+    public class EfUnitOfWork(AppDbContext context) : IUnitOfWork
     {
-        private readonly IDbConnection _connection;
-        private IDbTransaction _transaction;
-        private readonly Dictionary<Type, object> _repositories = new Dictionary<Type, object>();
+        private readonly AppDbContext _context = context;
+        private readonly Lazy<IRepository<Brigade>> _brigadeRepository = new Lazy<IRepository<Brigade>>(() =>
+                                                                            new EfRepository<Brigade>(context));
+        private readonly Lazy<IRepository<Work>> _workRepository = new Lazy<IRepository<Work>>(() =>
+                                                                            new EfRepository<Work>(context));
 
-        public UnitOfWork(IDbConnectionFactory dbConnectionFactory)
-        {
-            _connection = dbConnectionFactory.CreateConnection();
-            _connection.Open();
-        }
-
-        public void BeginTransaction()
-        {
-            _transaction = _connection.BeginTransaction();
-        }
-
-        public void Commit()
-        {
-            try
-            {
-                _transaction?.Commit();
-            }
-            catch
-            {
-                _transaction?.Rollback();
-                throw;
-            }
-            finally
-            {
-                _transaction?.Dispose();
-                _transaction = null;
-            }
-        }
-
-        public void Rollback()
-        {
-            _transaction?.Rollback();
-            _transaction?.Dispose();
-            _transaction = null;
-        }
-
-        public IRepository<T> GetRepository<T>() where T : Entity
-        {
-            if (_repositories.ContainsKey(typeof(T)))
-                return _repositories[typeof(T)] as IRepository<T>;
-
-            var repository = new Repository<T>(_connection, _transaction);
-            _repositories[typeof(T)] = repository;
-            return repository;
-        }
-
-        public void Dispose()
-        {
-            _transaction?.Dispose();
-            _connection?.Dispose();
-        }
+        public IRepository<Brigade> BrigadeRepository => _brigadeRepository.Value;
+        public IRepository<Work> WorkRepository => _workRepository.Value;
+        
+        public async Task CreateDataBaseAsync() => await _context.Database.EnsureCreatedAsync();
+        public async Task DeleteDataBaseAsync() => await _context.Database.EnsureDeletedAsync();
+        public async Task SaveAllAsync() => await _context.SaveChangesAsync();
     }
 }

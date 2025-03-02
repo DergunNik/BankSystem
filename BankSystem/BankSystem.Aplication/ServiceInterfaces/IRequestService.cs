@@ -1,4 +1,5 @@
 ﻿using BankSystem.Domain.Entities;
+using BankSystem.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace BankSystem.Aplication.ServiceInterfaces
 {
     public interface IRequestService
     {
-        void CreateRequest(User sender, IRequestable requestTarget);
-        void ApproveRequest(User recepient, IRequestable requestTarget);
-        void RejectRequest(User recepient, IRequestable requestTarget);
+        void CreateRequest(IRequestable requestTarget);
+        void ApproveRequest(IRequestable requestTarget);
+        void RejectRequest(IRequestable requestTarget);
         IReadOnlyList<IRequestable> GetAllRequests();
-        IReadOnlyList<IRequestable> GetRelevantRequests(User recepient);
+        IReadOnlyList<IRequestable> GetRelevantRequests(UserRole recepient);
     }
 }
