@@ -8,6 +8,7 @@ namespace BankSystem.Domain.Entities
 {
     public interface IRequestable
     {
+        int Id { get; set; }
         bool IsApproved { get; set; }
         DateTime RequestDate { get; set; }
         DateTime AnswerDate { get; set; }
