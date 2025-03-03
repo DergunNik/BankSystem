@@ -7,18 +7,29 @@ namespace BankSystem.WebAPI.Controllers
 {
     [ApiController]
     [Route("authorization")]
-    public class AuthController(IAuthService authService) : ControllerBase
+    public class AuthController : ControllerBase
     {
+        private readonly IAuthService _authService;
+        private readonly ILogger<AuthController> _logger;
+
+        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        {
+            _authService = authService;
+            _logger = logger;
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] User user)
         {
+            _logger.LogInformation($"HttpPost(\"register\") {user.ToString()}");
             try
             {
-                await authService.RegisterAsync(user);
+                await _authService.RegisterAsync(user);
                 return Ok();
             }
             catch (Exception e)
             {
+                _logger.LogError(e, $"HttpPost(\"register\") {user.ToString()}");
                 return StatusCode(StatusCodes.Status409Conflict, e.Message);
             }
         }
@@ -26,13 +37,15 @@ namespace BankSystem.WebAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] string email, [FromBody] string password)
         {
+            _logger.LogInformation($"HttpPost(\"register\") {email} {password}");
             try
             {
-                var token = await authService.LoginAsync(email, password);
+                var token = await _authService.LoginAsync(email, password);
                 return Ok(token);
             }
             catch (Exception e)
             {
+                _logger.LogError(e, $"HttpPost(\"register\") {email} {password}");
                 return StatusCode(StatusCodes.Status401Unauthorized, e.Message);
             }
         }

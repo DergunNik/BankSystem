@@ -14,6 +14,7 @@ namespace BankSystem.Domain.Entities
         public bool IsBlocked { get; set; }
         public bool IsFrozen{ get; set; }
         public bool IsSavingsAccount { get; set; }
+        public decimal AnnualInterestRate { get; set; }
         public DateTime UnavailableUntil { get; set; }
         public AccountOwnerType OwnerType { get; set; }
     }

@@ -2,6 +2,7 @@
 using BankSystem.Domain.Abstractions;
 using BankSystem.Domain.Entities;
 using BankSystem.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,25 +13,30 @@ namespace BankSystem.Aplication.Services
 {
     public class RequestService : IRequestService
     {
-        public RequestService(IUnitOfWork unitOfWork) 
+        readonly IUnitOfWork _unitOfWork;
+        readonly ILogger<RequestService> _logger;
+
+        public RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger) 
         {
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
-
-        readonly IUnitOfWork _unitOfWork;
 
         public async Task ApproveRequestAsync(IRequestable requestTarget)
         {
+            _logger.LogInformation($"ApproveRequestAsync {requestTarget.ToString()}");
             await HandleRequestAsync(true, requestTarget);
         }
 
         public async Task RejectRequestAsync(IRequestable requestTarget)
         {
+            _logger.LogInformation($"RejectRequestAsync {requestTarget.ToString()}");
             await HandleRequestAsync(false, requestTarget);
         }
 
         public async Task CreateRequestAsync(IRequestable requestTarget)
         {
+            _logger.LogInformation($"CreateRequestAsync {requestTarget.ToString()}");
             _unitOfWork.BeginTransaction();
 
             var (repositoryType, typedRepository) = GetRepository(requestTarget);
@@ -45,14 +51,32 @@ namespace BankSystem.Aplication.Services
             await _unitOfWork.CommitTransactionAsync();
         }
 
-        public IReadOnlyList<IRequestable> GetAllRequests()
+        public async Task<IReadOnlyCollection<Request>> GetRequecstsAsync(RequestType requestType)
         {
-            throw new NotImplementedException();
+            _logger.LogInformation($"GetRequecstsAsync {requestType.ToString()}");
+            var res = await _unitOfWork.GetRepository<Request>().ListAsync(r => r.RequestType == requestType);
+            return res.ToList().AsReadOnly();
         }
 
-        public IReadOnlyList<IRequestable> GetRelevantRequests(UserRole recepient)
+        public async Task<IRequestable> GetRequestEntity(Request request)
         {
-            throw new NotImplementedException();
+            _logger.LogInformation($"GetRequestEntity {request.ToString()}");
+            dynamic? entityRepository = null;
+            RequestType? requestType = null;
+
+            switch (request.RequestType)
+            {
+                case RequestType.User:
+                    entityRepository = _unitOfWork.GetRepository<User>();
+                    break;
+                case RequestType.Credit:
+                    entityRepository = _unitOfWork.GetRepository<Credit>();
+                    break;
+                default:
+                    throw new Exception("Not supported type is requestable");
+            }
+
+            return await entityRepository.GetByIdAsync(request.SenderId);
         }
 
         private async Task HandleRequestAsync(bool isApproved, IRequestable requestTarget)

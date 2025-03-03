@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 
 namespace BankSystem.Aplication.Services
 {
@@ -17,16 +18,19 @@ namespace BankSystem.Aplication.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IJwtService _jwtService;
         private readonly IRequestService _requestService;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IRequestService requestService)
+        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IRequestService requestService, ILogger<AuthService> logger)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;
             _requestService = requestService;
+            _logger = logger;
         }
 
         public async Task<string> LoginAsync(string email, string password)
         {
+            _logger.LogInformation($"LoginAsync {email} {password}");
             var user = await _unitOfWork.GetRepository<User>().ListAsync(user => user.Email == email);
             if (user.Count != 0 && Argon2.Verify(user[0].PasswordHash, password))
             {
@@ -47,6 +51,7 @@ namespace BankSystem.Aplication.Services
 
         public async Task RegisterAsync(User user)
         {
+            _logger.LogInformation($"RegisterAsync {user.ToString()}");
             var repository = _unitOfWork.GetRepository<User>();
             var thisEmailUserList = await repository.ListAsync(user => user.Email == user.Email);
             if (thisEmailUserList.ToList<User>().Count == 0)
