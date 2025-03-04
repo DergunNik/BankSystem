@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Aplication.ServiceInterfaces
 {
-    interface IBankReserveService
+    public interface IBankReserveService
     {
-        Task TransferMoneyToBankAsync(int accountId, int bankReserveId, decimal amount);
-        Task TransferMoneyFromBankAsync(int accountId, int bankReserveId, decimal amount);
+        Task TransferToBankAsync(int accountId, int bankReserveId, decimal amount, Entity? entity = null);
+        Task TransferFromBankAsync(int accountId, int bankReserveId, decimal amount, Entity? entity = null);
+        Task TransferToAccountBankAsync(int accountId, decimal amount, Entity? entity = null);
+        Task TransferFromAccountBankAsync(int accountId, decimal amount, Entity? entity = null);
         Task GetMoneyFromStateBankAsync(int bankReserveId, decimal amount);
     }
 }

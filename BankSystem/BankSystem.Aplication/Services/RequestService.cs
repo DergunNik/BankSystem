@@ -14,10 +14,12 @@ namespace BankSystem.Aplication.Services
     public class RequestService : IRequestService
     {
         readonly IUnitOfWork _unitOfWork;
+        readonly ICreditService _creditService;
         readonly ILogger<RequestService> _logger;
 
-        public RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger) 
+        public RequestService(IUnitOfWork unitOfWork, ICreditService creditService, ILogger<RequestService> logger) 
         {
+            _creditService = creditService;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -35,11 +37,13 @@ namespace BankSystem.Aplication.Services
         }
         public async Task ApproveRequestAsync(Request request)
         {
+            _logger.LogInformation($"ApproveRequestAsync {request.ToString()}");
             await ApproveRequestAsync(await GetRequestEntityAsync(request));
         }
 
         public async Task RejectRequestAsync(Request request)
         {
+            _logger.LogInformation($"RejectRequestAsync {request.ToString()}");
             await RejectRequestAsync(await GetRequestEntityAsync(request));
         }
 
@@ -111,10 +115,12 @@ namespace BankSystem.Aplication.Services
                     entityRepository = _unitOfWork.GetRepository<User>();
                     requestType = RequestType.User;
                 }
-                else if (requestTarget is Credit)
+                else if (requestTarget is Credit credit)
                 {
                     entityRepository = _unitOfWork.GetRepository<Credit>();
                     requestType = RequestType.Credit;
+                    isApproved = isApproved && _unitOfWork.GetRepository<User>().GetByIdAsync(credit.UserId).Result is not null
+                                            && _unitOfWork.GetRepository<Account>().GetByIdAsync(credit.AccountId).Result is not null;
                 }
                 else
                 {
@@ -126,6 +132,10 @@ namespace BankSystem.Aplication.Services
                     requestTarget.IsApproved = true;
                     requestTarget.AnswerDate = DateTime.UtcNow;
                     await entityRepository?.UpdateAsync(requestTarget);
+                    if (requestType == RequestType.Credit)
+                    {
+                        await _creditService.InitCreditAsync(((Credit)requestTarget).Id);
+                    }
                 }
                 else
                 {

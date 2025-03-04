@@ -45,59 +45,43 @@ namespace BankSystem.Aplication.Services
             }
         }
 
-        public async Task TransferMoneyFromBankAsync(int accountId, int bankReserveId, decimal amount)
+        public async Task TransferFromBankAsync(int accountId, int bankReserveId, decimal amount, Entity? entity = null)
         {
             _logger.LogInformation($"TransferMoneyFromBank {accountId.ToString()} {bankReserveId.ToString()}");
-            var (account, reserve) = await DoTransferPreparation(accountId, bankReserveId, amount);
+            var (account, reserve) = await DoTransferPreparationAsync(accountId, bankReserveId, amount);
             if (reserve!.Balance < amount)
             {
                 await GetMoneyFromStateBankAsync(bankReserveId, amount * 2);
             }
 
-            try
-            {
-                _unitOfWork.BeginTransaction();
-                var accountRepository = _unitOfWork.GetRepository<Account>();
-                var reserveRepository = _unitOfWork.GetRepository<BankReserve>();
-                reserve!.Balance -= amount;
-                account!.Balance += amount;
-                await accountRepository.UpdateAsync(account);
-                await reserveRepository.UpdateAsync(reserve);
-                await _unitOfWork.CommitTransactionAsync();
-            }
-            catch (Exception e)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-            }
+            await TransferAsync(account, reserve, amount, false, entity);
         }
 
-        public async Task TransferMoneyToBankAsyncx(int accountId, int bankReserveId, decimal amount)
+        public async Task TransferFromAccountBankAsync(int accountId, decimal amount, Entity? entity = null)
+        {
+            _logger.LogInformation($"TransferFromAccountBankAsync {accountId.ToString()}");
+            await TransferFromBankAsync(accountId, GetBankReserveAsync(accountId).Result.Id, amount, entity);
+        }
+
+        public async Task TransferToBankAsync(int accountId, int bankReserveId, decimal amount, Entity? entity = null)
         {
             _logger.LogInformation($"TransferMoneyToBank {accountId.ToString()} {bankReserveId.ToString()}");
-            var (account, reserve) = await DoTransferPreparation(accountId, bankReserveId, amount);
+            var (account, reserve) = await DoTransferPreparationAsync(accountId, bankReserveId, amount);
             if (account!.Balance < amount)
             {
                 throw new Exception("Owner doesnt have enough money");
             }
 
-            try
-            {
-                _unitOfWork.BeginTransaction();
-                var accountRepository = _unitOfWork.GetRepository<Account>();
-                var reserveRepository = _unitOfWork.GetRepository<BankReserve>();
-                account!.Balance -= amount;
-                reserve!.Balance += amount;
-                await accountRepository.UpdateAsync(account);
-                await reserveRepository.UpdateAsync(reserve);
-                await _unitOfWork.CommitTransactionAsync();
-            }
-            catch (Exception e)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-            }
+            await TransferAsync(account, reserve, amount, true, entity);
         }
 
-        private async Task<(Account?, BankReserve?)> DoTransferPreparation(int accountId, int bankReserveId, decimal amount)
+        public async Task TransferToAccountBankAsync(int accountId, decimal amount, Entity? entity = null)
+        {
+            _logger.LogInformation($"TransferToAccountBankAsync {accountId.ToString()}");
+            await TransferToBankAsync(accountId, GetBankReserveAsync(accountId).Result.Id, amount, entity);
+        }
+
+        private async Task<(Account, BankReserve)> DoTransferPreparationAsync(int accountId, int bankReserveId, decimal amount)
         {
             if (amount < 0)
             {
@@ -112,6 +96,61 @@ namespace BankSystem.Aplication.Services
                 throw new Exception("Invalid transfer input");
             }
             return (account, reserve);
+        }
+
+        private async Task<BankReserve> GetBankReserveAsync(int accountId)
+        {
+            var account = await _unitOfWork.GetRepository<Account>().GetByIdAsync(accountId);
+            if (account is null) throw new Exception($"Invalid account id {accountId} input");
+            var reserve = await _unitOfWork.GetRepository<BankReserve>()
+                .FirstOrDefaultAsync(r => r.BankId == account.BankId);
+            if (reserve is null) throw new Exception($"Invalid bank id {account.BankId} input");
+            return reserve;
+        }
+
+        private async Task TransferAsync(Account account, BankReserve reserve, decimal amount, bool toBank, Entity? entity = null)
+        {
+            try
+            {
+                _unitOfWork.BeginTransaction();
+                var accountRepository = _unitOfWork.GetRepository<Account>();
+                var reserveRepository = _unitOfWork.GetRepository<BankReserve>();
+                if (toBank)
+                {
+                    account.Balance -= amount;
+                    reserve.Balance += amount;
+                }
+                else
+                {
+                    reserve.Balance -= amount;
+                    account.Balance += amount;
+                }
+                await accountRepository.UpdateAsync(account);
+                await reserveRepository.UpdateAsync(reserve);
+
+                if (entity is not null)
+                {
+                    var entityType = entity.GetType();
+                    var repositoryType = typeof(IRepository<>).MakeGenericType(entityType);
+                    var repository = _unitOfWork.GetType().GetMethod("GetRepository")?
+                        .MakeGenericMethod(entityType)
+                        .Invoke(_unitOfWork, null);
+                    if (repository is not null)
+                    {
+                        var updateMethod = repositoryType.GetMethod("UpdateAsync");
+                        if (updateMethod is not null)
+                        {
+                            await (Task)updateMethod.Invoke(repository, new object[] { entity });
+                        }
+                    }
+                }
+
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+            }
         }
     }
 }

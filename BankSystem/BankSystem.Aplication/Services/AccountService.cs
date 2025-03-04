@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Aplication.Services
 {
-    class AccountService : IAccountService
+    public class AccountService : IAccountService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<AccountService> _logger;
@@ -49,7 +49,7 @@ namespace BankSystem.Aplication.Services
                     throw new Exception("Not supported type is owner");
             }
 
-            if (account.UnavailableUntil < DateTime.UtcNow) throw new Exception("Invalid date");
+            if (account.SavingsAccountUntil < DateTime.UtcNow) throw new Exception("Invalid date");
             if (account.MonthlyInterestRate < 0) throw new Exception("Invalid interes rate");
             if (_unitOfWork.GetRepository<Bank>().GetByIdAsync(account.Id).Result is null)
             { 
@@ -83,12 +83,8 @@ namespace BankSystem.Aplication.Services
 
             if (account.CreationDate <= DateTime.UtcNow.AddMonths(-1))
             {
-                var reserve = await _unitOfWork.GetRepository<BankReserve>()
-                    .FirstOrDefaultAsync(r => r.BankId == account.BankId);
-                if (reserve is null) throw new Exception("Invalid account's bank id");
-
                 var amount = account.Balance * account.MonthlyInterestRate / 100m;
-                await _bankReserveService.TransferMoneyFromBankAsync(accountId, reserve.Id, amount);
+                await _bankReserveService.TransferFromAccountBankAsync(accountId, amount);
             }
         }
 
@@ -122,6 +118,16 @@ namespace BankSystem.Aplication.Services
             _logger.LogInformation($"UnfreezeAccountAsync {account?.ToString()}");
             if (account is null) throw new Exception($"Account with {accountId} doesn't exist");
             account.IsFrozen = false;
+        }
+
+        public bool CanWithdrawFrom(Account account)
+        {
+            return !account.IsFrozen && !account.IsBlocked && !account.IsDeposit;
+        }
+
+        public bool CanDepositTo(Account account)
+        {
+            return !account.IsBlocked && !account.IsDeposit;
         }
     }
 }

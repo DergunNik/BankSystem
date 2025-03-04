@@ -15,6 +15,8 @@ namespace BankSystem.Domain.Entities
         public DateTime RequestDate { get; set; }
         public DateTime AnswerDate { get; set; }
         public int DurationInMonths { get; set; }
+        public int UserId { get; set; }
+        public int AccountId { get; set; }
         public decimal MonthlyPayment { get; set; }
         public string Reason { get; set; }
         public decimal InterestRate { get; set; }

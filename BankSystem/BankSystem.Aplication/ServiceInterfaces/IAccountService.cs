@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Aplication.ServiceInterfaces
 {
-    interface IAccountService
+    public interface IAccountService
     {
         Task CreateAccountAsync(Account account);
         Task<Account?> GetAccountAsync(int accountId);
@@ -16,5 +16,7 @@ namespace BankSystem.Aplication.ServiceInterfaces
         Task UnblockAccountAsync(int accountId);
         Task FreezeAccountAsync(int accountId);
         Task UnfreezeAccountAsync(int accountId);
+        bool CanWithdrawFrom(Account account);
+        bool CanDepositTo(Account account);
     }
 }
