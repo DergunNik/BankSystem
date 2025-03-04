@@ -33,22 +33,39 @@ namespace BankSystem.Aplication.Services
             _logger.LogInformation($"RejectRequestAsync {requestTarget.ToString()}");
             await HandleRequestAsync(false, requestTarget);
         }
+        public async Task ApproveRequestAsync(Request request)
+        {
+            await ApproveRequestAsync(await GetRequestEntityAsync(request));
+        }
+
+        public async Task RejectRequestAsync(Request request)
+        {
+            await RejectRequestAsync(await GetRequestEntityAsync(request));
+        }
 
         public async Task CreateRequestAsync(IRequestable requestTarget)
         {
             _logger.LogInformation($"CreateRequestAsync {requestTarget.ToString()}");
-            _unitOfWork.BeginTransaction();
-
-            var (repositoryType, typedRepository) = GetRepository(requestTarget);
-
-            var addMethod = repositoryType.GetMethod("AddAsync");
-            if (addMethod != null)
+            try
             {
-                requestTarget.RequestDate = DateTime.UtcNow;
-                await (Task)addMethod.Invoke(typedRepository, new object[] { requestTarget });
-            }
+                _unitOfWork.BeginTransaction();
 
-            await _unitOfWork.CommitTransactionAsync();
+                var (repositoryType, typedRepository) = GetRepository(requestTarget);
+
+                var addMethod = repositoryType.GetMethod("AddAsync");
+                if (addMethod != null)
+                {
+                    requestTarget.RequestDate = DateTime.UtcNow;
+                    await (Task)addMethod.Invoke(typedRepository, new object[] { requestTarget });
+                }
+
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }   
         }
 
         public async Task<IReadOnlyCollection<Request>> GetRequecstsAsync(RequestType requestType)
@@ -58,7 +75,7 @@ namespace BankSystem.Aplication.Services
             return res.ToList().AsReadOnly();
         }
 
-        public async Task<IRequestable> GetRequestEntity(Request request)
+        public async Task<IRequestable> GetRequestEntityAsync(Request request)
         {
             _logger.LogInformation($"GetRequestEntity {request.ToString()}");
             dynamic? entityRepository = null;
@@ -81,46 +98,54 @@ namespace BankSystem.Aplication.Services
 
         private async Task HandleRequestAsync(bool isApproved, IRequestable requestTarget)
         {
-            _unitOfWork.BeginTransaction();
+            try
+            {
+                _unitOfWork.BeginTransaction();
 
-            dynamic? entityRepository = null;
-            var requestRepository = _unitOfWork.GetRepository<Request>();
-            RequestType? requestType = null;
+                dynamic? entityRepository = null;
+                var requestRepository = _unitOfWork.GetRepository<Request>();
+                RequestType? requestType = null;
 
-            if (requestTarget is User)
-            {
-                entityRepository = _unitOfWork.GetRepository<User>();
-                requestType = RequestType.User;
-            }
-            else if (requestTarget is Credit)
-            {
-                entityRepository = _unitOfWork.GetRepository<Credit>();
-                requestType = RequestType.Credit;
-            }
-            else
-            {
-                throw new Exception("Not supported type is requestable");
-            }
+                if (requestTarget is User)
+                {
+                    entityRepository = _unitOfWork.GetRepository<User>();
+                    requestType = RequestType.User;
+                }
+                else if (requestTarget is Credit)
+                {
+                    entityRepository = _unitOfWork.GetRepository<Credit>();
+                    requestType = RequestType.Credit;
+                }
+                else
+                {
+                    throw new Exception("Not supported type is requestable");
+                }
 
-            if (isApproved)
-            {
-                requestTarget.IsApproved = true;
-                requestTarget.AnswerDate = DateTime.UtcNow;
-                await entityRepository?.UpdateAsync(requestTarget);
-            }
-            else
-            {
-                await entityRepository?.DeleteAsync(requestTarget);
-            }
-            var request = await requestRepository.FirstOrDefaultAsync(
-                    r => r.RequestType == requestType && r.RequestEntityId == requestTarget.Id);
-            if (request is not null)
-            {
-                request.IsChecked = true;
-                await requestRepository.UpdateAsync(request);
-            }
+                if (isApproved)
+                {
+                    requestTarget.IsApproved = true;
+                    requestTarget.AnswerDate = DateTime.UtcNow;
+                    await entityRepository?.UpdateAsync(requestTarget);
+                }
+                else
+                {
+                    await entityRepository?.DeleteAsync(requestTarget);
+                }
+                var request = await requestRepository.FirstOrDefaultAsync(
+                        r => r.RequestType == requestType && r.RequestEntityId == requestTarget.Id);
+                if (request is not null)
+                {
+                    request.IsChecked = true;
+                    await requestRepository.UpdateAsync(request);
+                }
 
-            await _unitOfWork.CommitTransactionAsync();
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         private (Type, dynamic?) GetRepository(IRequestable requestTarget)

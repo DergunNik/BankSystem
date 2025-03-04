@@ -1,5 +1,4 @@
 ﻿using BankSystem.Domain.Entities;
-using BankSystem.Persistence.Database;
 using BankSystem.Persistence.Repositories;
 using BankSystem.Domain.Abstractions;
 using Dapper;
@@ -72,6 +71,5 @@ namespace BankSystem.Persistence.UnitOfWork
                 }
             }
         }
-
     }
 }
