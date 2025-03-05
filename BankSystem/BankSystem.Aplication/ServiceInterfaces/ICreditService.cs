@@ -9,7 +9,7 @@ namespace BankSystem.Aplication.ServiceInterfaces
 {
     public interface ICreditService
     {
-        Task InitCredit(int creditId);
+        Task InitCreditAsync(int creditId);
         Task PayCreditAsync(int creditId, int accountId, decimal amount);
         Task<IReadOnlyList<Credit>> GetCreditsByUserIdAsync(int userId);
         Task<IReadOnlyList<Credit>> GetCreditsByUserIdAsync(int userId, bool isPaid);

@@ -93,6 +93,9 @@ namespace BankSystem.Aplication.Services
                 case RequestType.Credit:
                     entityRepository = _unitOfWork.GetRepository<Credit>();
                     break;
+                case RequestType.SalaryProject:
+                    entityRepository = _unitOfWork.GetRepository<SalaryProject>();
+                    break;
                 default:
                     throw new Exception("Not supported type is requestable");
             }
@@ -121,6 +124,18 @@ namespace BankSystem.Aplication.Services
                     requestType = RequestType.Credit;
                     isApproved = isApproved && _unitOfWork.GetRepository<User>().GetByIdAsync(credit.UserId).Result is not null
                                             && _unitOfWork.GetRepository<Account>().GetByIdAsync(credit.AccountId).Result is not null;
+                }
+                else if (requestTarget is SalaryProject project)
+                {
+                    entityRepository = _unitOfWork.GetRepository<Credit>();                    
+                    requestType = RequestType.SalaryProject;
+                    var enterprise = await _unitOfWork.GetRepository<Enterprise>()
+                        .GetByIdAsync(project.EnterpriseId);
+                    isApproved = isApproved && enterprise is not null
+                                            && await _unitOfWork.GetRepository<Account>()
+                                                .FirstOrDefaultAsync(a => a.OwnerId == enterprise.Id 
+                                                    && a.OwnerType == AccountOwnerType.Enterprise)
+                                                is not null;
                 }
                 else
                 {

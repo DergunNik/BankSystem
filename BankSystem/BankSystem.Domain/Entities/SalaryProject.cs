@@ -11,7 +11,9 @@ namespace BankSystem.Domain.Entities
         public bool IsApproved { get; set; }
         public DateTime RequestDate { get; set; }
         public DateTime AnswerDate { get; set; }
+        public DateTime SalaryDate { get; set; }
         public int EnterpriseId { get; set; }
+        public int EnterpriseAccountId { get; set; }
         public string Details { get; set; }
     }
 }

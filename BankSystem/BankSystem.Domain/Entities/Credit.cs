@@ -8,6 +8,7 @@ namespace BankSystem.Domain.Entities
 {
     public class Credit : BankRelatedEntity, IRequestable
     {
+        public decimal CreditAmount {get; set; }
         public decimal TotalAmount { get; set; }
         public decimal PaidAmount { get; set; }
         public bool IsApproved { get; set; }
@@ -17,7 +18,6 @@ namespace BankSystem.Domain.Entities
         public int DurationInMonths { get; set; }
         public int UserId { get; set; }
         public int AccountId { get; set; }
-        public decimal MonthlyPayment { get; set; }
         public string Reason { get; set; }
         public decimal InterestRate { get; set; }
     }

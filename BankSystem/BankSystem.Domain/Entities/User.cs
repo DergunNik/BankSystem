@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BankSystem.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,8 +15,8 @@ namespace BankSystem.Domain.Entities
         public string Phone { get; set; }
         public string Email { get; set; }
         public bool IsActive { get; set; }
-        public Enums.UserRole UserRole { get; set; }
         public bool IsApproved { get; set; }
+        public UserRole UserRole { get; set; }
         public DateTime RequestDate { get; set; }
         public DateTime AnswerDate { get; set; }
         public string PasswordHash { get; set; }

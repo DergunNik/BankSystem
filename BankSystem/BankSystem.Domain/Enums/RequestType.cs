@@ -9,6 +9,7 @@ namespace BankSystem.Domain.Enums
     public enum RequestType
     {
         Credit,
-        User
+        User,
+        SalaryProject
     }
 }
