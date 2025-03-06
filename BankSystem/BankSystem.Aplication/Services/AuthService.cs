@@ -17,22 +17,24 @@ namespace BankSystem.Aplication.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IJwtService _jwtService;
+        private readonly IBankService _bankService;
         private readonly IRequestService _requestService;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IRequestService requestService, ILogger<AuthService> logger)
+        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IBankService bankService, IRequestService requestService, ILogger<AuthService> logger)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;
+            _bankService = bankService;
             _requestService = requestService;
             _logger = logger;
         }
 
-        public async Task<string> LoginAsync(string email, string password)
+        public async Task<string> LoginAsync(string email, string password, int bankId)
         {
-            _logger.LogInformation($"LoginAsync {email} {password}");
-            var user = await _unitOfWork.GetRepository<User>().ListAsync(user => user.Email == email);
-            if (user.Count != 0 && Argon2.Verify(user[0].PasswordHash, password))
+            _logger.LogInformation($"LoginAsync {email} {password} {bankId}");
+            var user = await _unitOfWork.GetRepository<User>().ListAsync(u => u.Email == email && u.BankId == bankId);
+            if (user.Count == 1 && Argon2.Verify(user[0].PasswordHash, password))
             {
                 if (user[0].IsApproved)
                 {
@@ -42,6 +44,10 @@ namespace BankSystem.Aplication.Services
                 {
                     throw new Exception("This user is not approved");
                 }
+            }
+            else if (user.Count > 1)
+            {
+                throw new Exception("Too many users with this email. Ask operator");
             }
             else
             {
@@ -53,7 +59,23 @@ namespace BankSystem.Aplication.Services
         {
             _logger.LogInformation($"RegisterAsync {user.ToString()}");
             var repository = _unitOfWork.GetRepository<User>();
-            var thisEmailUserList = await repository.ListAsync(user => user.Email == user.Email);
+
+            if (String.IsNullOrEmpty(user.FullName) ||
+                String.IsNullOrEmpty(user.PassportSeriesAndNumber) ||
+                String.IsNullOrEmpty(user.IdentificationNumber) ||
+                String.IsNullOrEmpty(user.Phone) ||
+                String.IsNullOrEmpty(user.Email) ||
+                String.IsNullOrEmpty(user.PasswordHash))
+            {
+                throw new Exception("Can't contain empty fields");
+            }
+
+            if (!_bankService.DoesBankWithIdExistAsync(user.BankId).Result)
+            {
+                throw new Exception($"Invalid bankId {user.BankId}");
+            }
+
+            var thisEmailUserList = await repository.ListAsync(u => u.Email == user.Email && u.BankId == user.BankId);
 
             bool isEmailUsed = false;
             foreach(var u in thisEmailUserList)

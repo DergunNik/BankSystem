@@ -8,8 +8,8 @@ namespace BankSystem.Domain.Entities
 {
     public class Bank : Entity
     {
-        public string LegalName { get; set; }
-        public string BIC { get; set; }
         public string Address { get; set; }
+        public string BIC { get; set; }
+        public string LegalName { get; set; }
     }
 }

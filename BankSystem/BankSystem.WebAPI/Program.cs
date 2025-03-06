@@ -1,5 +1,5 @@
 using BankSystem.Aplication;
-using BankSystem.Persistence;
+using BankSystem.Infrastructure;
 using Serilog;
 using Serilog.Events;
 
@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi()
                 .AddApplication(builder.Configuration)
-                .AddPersistence(builder.Configuration);
+                .AddInfrastructure(builder.Configuration);
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
