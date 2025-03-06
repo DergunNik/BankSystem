@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Persistence.Settings
+namespace BankSystem.Infrastructure.Persistence.Settings
 {
     public class DbConnectionSettings
     {

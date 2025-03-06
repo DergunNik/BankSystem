@@ -5,13 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Aplication.ServiceInterfaces
+namespace BankSystem.Domain.Abstractions.ServiceInterfaces
 {
     public interface ISalaryService
     {
-        Task AddEmployeeAsync(int userId, int salaryProjectId, decimal amount);
-        Task RemoveEmployeeAsync(int userId, int salaryProjectId);
+        Task AddSalaryAsync(int UserAccountId, int salaryProjectId, decimal amount);
+        Task RemoveSalaryAsync(int salaryId);
         Task<IReadOnlyCollection<Salary>> GetEnterpriseSalariesAsync(int enterpriseId);
         Task<IReadOnlyCollection<Salary>> GetUserSalariesAsync(int userId);
+        Task HandleTodaysSalariesAsync();
     }
 }

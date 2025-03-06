@@ -1,22 +1,24 @@
-﻿using BankSystem.Persistence.Database;
+﻿using BankSystem.Infrastructure.Database;
 using BankSystem.Domain.Abstractions;
-using BankSystem.Persistence.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using BankSystem.Persistence.UnitOfWork;
-using BankSystem.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using BankSystem.Infrastructure.Persistence.Data;
+using BankSystem.Infrastructure.Persistence.UnitOfWork;
+using BankSystem.Infrastructure.Persistence.Settings;
+using BankSystem.Infrastructure.Daemons;
 
-namespace BankSystem.Persistence
+namespace BankSystem.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<DbConnectionSettings>(configuration.GetSection("DbConnectionSettings"))
-                    .AddSingleton<IUnitOfWork, EfUnitOfWork>()
-                    .AddSingleton<AppDbContext>();
+                    .AddScoped<IUnitOfWork, EfUnitOfWork>()
+                    .AddScoped<AppDbContext>()
+                    .AddHostedService<SalaryDaemon>();
             return services;
         }
     }

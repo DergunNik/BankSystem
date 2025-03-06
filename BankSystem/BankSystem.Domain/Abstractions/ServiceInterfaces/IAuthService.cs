@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Aplication.ServiceInterfaces
+namespace BankSystem.Domain.Abstractions.ServiceInterfaces
 {
     public interface IAuthService
     {

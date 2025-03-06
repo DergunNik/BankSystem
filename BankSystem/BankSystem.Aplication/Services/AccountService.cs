@@ -1,5 +1,5 @@
-﻿using BankSystem.Aplication.ServiceInterfaces;
-using BankSystem.Domain.Abstractions;
+﻿using BankSystem.Domain.Abstractions;
+using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using BankSystem.Domain.Entities;
 using BankSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -81,7 +81,6 @@ namespace BankSystem.Aplication.Services
             }
             if (account.Balance != 0m) throw new Exception("Account balance is not 0");
         }
-
 
         public async Task<Account?> GetAccountAsync(int accountId)
         {

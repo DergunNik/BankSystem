@@ -1,5 +1,5 @@
 ﻿using BankSystem.Domain.Entities;
-using BankSystem.Persistence.Repositories;
+using BankSystem.Infrastructure.Repositories;
 using BankSystem.Domain.Abstractions;
 using Dapper;
 using System;
@@ -8,12 +8,12 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BankSystem.Persistence.Data;
 using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore;
+using BankSystem.Infrastructure.Persistence.Data;
 
-namespace BankSystem.Persistence.UnitOfWork
+namespace BankSystem.Infrastructure.Persistence.UnitOfWork
 {
     public class EfUnitOfWork(AppDbContext context) : IUnitOfWork
     {

@@ -1,5 +1,4 @@
-﻿using BankSystem.Aplication.ServiceInterfaces;
-using BankSystem.Domain.Entities;
+﻿using BankSystem.Domain.Entities;
 using BankSystem.Domain.Enums;
 using BankSystem.Domain.Abstractions;
 using Isopoh.Cryptography.Argon2;
@@ -10,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
+using BankSystem.Domain.Abstractions.ServiceInterfaces;
 
 namespace BankSystem.Aplication.Services
 {

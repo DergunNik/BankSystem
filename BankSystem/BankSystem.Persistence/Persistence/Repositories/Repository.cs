@@ -9,9 +9,9 @@ using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using BankSystem.Persistence.Data;
+using BankSystem.Infrastructure.Persistence.Data;
 
-namespace BankSystem.Persistence.Repositories
+namespace BankSystem.Infrastructure.Persistence.Repositories
 {
     public class EfRepository<T>(AppDbContext context) : IRepository<T> where T : Entity
     {

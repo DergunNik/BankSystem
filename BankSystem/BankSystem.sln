@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.Domain", "BankSy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.Aplication", "BankSystem.Aplication\BankSystem.Aplication.csproj", "{A7E5BCCA-2AD8-4D47-BE05-A16697291919}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.Persistence", "BankSystem.Persistence\BankSystem.Persistence.csproj", "{5C05DFBF-AB89-4A75-A8EA-E7ED5094C926}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.Infrastructure", "BankSystem.Persistence\BankSystem.Infrastructure.csproj", "{5C05DFBF-AB89-4A75-A8EA-E7ED5094C926}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.UI", "BankSystem.UI\BankSystem.UI.csproj", "{60BC0394-B003-4563-8A78-D759BD7B55E1}"
 EndProject

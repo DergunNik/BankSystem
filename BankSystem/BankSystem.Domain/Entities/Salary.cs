@@ -9,7 +9,7 @@ namespace BankSystem.Domain.Entities
     public class Salary : BankRelatedEntity
     {
         public decimal Amount { get; set; }
-        public int UserId { get; set; }
+        public int UserAccountId { get; set; }
         public int SalaryProjectId { get; set; }
     }
 }

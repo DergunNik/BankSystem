@@ -1,5 +1,5 @@
-﻿using BankSystem.Aplication.ServiceInterfaces;
-using BankSystem.Domain.Abstractions;
+﻿using BankSystem.Domain.Abstractions;
+using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using BankSystem.Domain.Entities;
 using BankSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;

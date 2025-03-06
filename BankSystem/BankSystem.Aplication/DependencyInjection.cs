@@ -1,6 +1,6 @@
-﻿using BankSystem.Aplication.ServiceInterfaces;
-using BankSystem.Aplication.Services;
+﻿using BankSystem.Aplication.Services;
 using BankSystem.Aplication.Settings;
+using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,8 +11,17 @@ namespace BankSystem.Aplication
         public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<AuthSettings>(configuration.GetSection("AuthSettings"))
+                    .AddScoped<IAccountService, AccountService>()
+                    .AddScoped<IAuthService, AuthService>()
+                    .AddScoped<IBankReserveService, BankReserveService>()
+                    .AddScoped<ICanselRestorationService, CanselRestorationService>()
+                    .AddScoped<ICreditCansellationService, CreditCansellationService>()
+                    .AddScoped<ICreditService, CreditService>()
                     .AddScoped<IJwtService, JwtService>()
-                    .AddScoped<IAuthService, AuthService>();
+                    .AddScoped<IRequestService, RequestService>()
+                    .AddScoped<ISalaryService, SalaryService>()
+                    .AddScoped<ITransferCansellationService, TransferCansellationService>()
+                    .AddScoped<ITransferService, TransferService>();
             return services;
         }
     }

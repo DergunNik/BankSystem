@@ -1,5 +1,5 @@
-﻿using BankSystem.Aplication.ServiceInterfaces;
-using BankSystem.Domain.Abstractions;
+﻿using BankSystem.Domain.Abstractions;
+using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using BankSystem.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using System;
@@ -68,8 +68,6 @@ namespace BankSystem.Aplication.Services
             {
                 throw;
             }
-
-
         }
 
         public async Task<IReadOnlyList<Credit>> GetCreditsByUserIdAsync(int userId)

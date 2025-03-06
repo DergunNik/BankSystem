@@ -1,5 +1,5 @@
 ﻿using BankSystem.Domain.Entities;
-using BankSystem.Persistence.Settings;
+using BankSystem.Infrastructure.Persistence.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
@@ -9,13 +9,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Persistence.Data
+namespace BankSystem.Infrastructure.Persistence.Data
 {
     public class AppDbContext : DbContext
     {
         public AppDbContext(IOptions<DbConnectionSettings> options)
                 : base(new DbContextOptionsBuilder<AppDbContext>()
-                       .UseSqlite(String.Format(options.Value.SqliteConnection, AppContext.BaseDirectory))
+                       .UseSqlite(string.Format(options.Value.SqliteConnection, AppContext.BaseDirectory))
                        .Options)
         {
             Database.EnsureCreated();

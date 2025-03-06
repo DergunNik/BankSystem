@@ -1,13 +1,9 @@
-﻿using BankSystem.Aplication.ServiceInterfaces;
-using BankSystem.Domain.Abstractions;
+﻿using BankSystem.Domain.Abstractions;
+using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using BankSystem.Domain.Entities;
 using BankSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
-using SQLitePCL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace BankSystem.Aplication.Services
@@ -15,22 +11,29 @@ namespace BankSystem.Aplication.Services
     public class SalaryService : ISalaryService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ITransferService _transferService;
         private readonly ILogger<SalaryService> _logger;
 
-        public SalaryService(IUnitOfWork unitOfWork, ILogger<SalaryService> logger)
+        public SalaryService(IUnitOfWork unitOfWork, ITransferService transferService, ILogger<SalaryService> logger)
         {
             _unitOfWork = unitOfWork;
+            _transferService = transferService;
             _logger = logger;
         }
 
-        public async Task AddEmployeeAsync(int userId, int salaryProjectId, decimal amount)
+        public async Task AddSalaryAsync(int userAccountId, int salaryProjectId, decimal amount)
         {
-            _logger.LogInformation($"AddEmployeeAsync {userId} {salaryProjectId}");
-            var (user, project) = await DoPreparation(userId, salaryProjectId);
+            _logger.LogInformation($"AddEmployeeAsync {userAccountId} {salaryProjectId}");
+            var (account, project) = await DoPreparation(userAccountId, salaryProjectId);
+            if (account.OwnerType != AccountOwnerType.IndividualUser)
+            {
+                throw new Exception("Can't add salary to nor individual user account");
+            }   
+            
             var salary = new Salary()
             {
                 Amount = amount,
-                UserId = userId,
+                UserAccountId = userAccountId,
                 SalaryProjectId = salaryProjectId
             };
 
@@ -39,15 +42,12 @@ namespace BankSystem.Aplication.Services
             await _unitOfWork.CommitTransactionAsync();
         }
 
-        public async Task RemoveEmployeeAsync(int userId, int salaryProjectId)
+        public async Task RemoveSalaryAsync(int salaryId)
         {
-            _logger.LogInformation($"RemoveEmployeeAsync {userId} {salaryProjectId}");
-            var (user, project) = await DoPreparation(userId, salaryProjectId);
-            var salary = await _unitOfWork.GetRepository<Salary>()
-                .FirstOrDefaultAsync(s => s.SalaryProjectId == salaryProjectId && s.UserId == userId);
+            _logger.LogInformation($"RemoveEmployeeAsync {salaryId}");
+            var salary = await _unitOfWork.GetRepository<Salary>().GetByIdAsync(salaryId)
+                ?? throw new Exception($"Invalid salary id {salaryId}");
             
-            if (salary is null) throw new Exception("Such salary doesn't exist");
-
             _unitOfWork.BeginTransaction();
             await _unitOfWork.GetRepository<Salary>().DeleteAsync(salary);
             await _unitOfWork.CommitTransactionAsync();
@@ -69,17 +69,53 @@ namespace BankSystem.Aplication.Services
         public async Task<IReadOnlyCollection<Salary>> GetUserSalariesAsync(int userId)
         {
             _logger.LogInformation($"GetUserSalariesAsync {userId}");
-            return await _unitOfWork.GetRepository<Salary>().ListAsync(s => s.UserId == userId);
+            var accounts = _unitOfWork.GetRepository<Account>()
+                .ListAsync(a => a.OwnerType == AccountOwnerType.IndividualUser && a.OwnerId == userId)
+                .Result.Select(a => a.Id).ToHashSet();
+            return await _unitOfWork.GetRepository<Salary>().ListAsync(s => accounts.Contains(s.Id));
         }
 
-        private async Task<(User, SalaryProject)> DoPreparation(int userId, int salaryProjectId)
+        public async Task HandleTodaysSalariesAsync()
         {
-            var user = await _unitOfWork.GetRepository<User>().GetByIdAsync(userId);
-            var project = await _unitOfWork.GetRepository<SalaryProject>().GetByIdAsync(salaryProjectId);
-            if (user is null || project is null)
+            _logger.LogInformation("HandleTodaysSalariesAsync");
+            var projects = await _unitOfWork.GetRepository<SalaryProject>()
+                .ListAsync(p => p.SalaryDate.Day == DateTime.UtcNow.Day);
+            foreach (var project in projects)
             {
-                throw new Exception("Invalid id input");
+                int enterpriseAccountId = project.EnterpriseAccountId;
+                var salaries = await _unitOfWork.GetRepository<Salary>()
+                    .ListAsync(s => s.SalaryProjectId == project.Id);
+                decimal salariesSum = 0m;
+                foreach (var salary in salaries)
+                {
+                    salariesSum += salary.Amount;
+                }
+                var enterpriseAccount = await _unitOfWork.GetRepository<Account>().GetByIdAsync(enterpriseAccountId);
+                if (salariesSum > enterpriseAccount.Balance)
+                {
+                    _logger.LogWarning($"Enterprice {project.EnterpriseId} doesn't have enough money for salaries");
+                    continue;
+                }
+                foreach (var salary in salaries)
+                {
+                    try
+                    {
+                        await _transferService.TransferAsync(salary.UserAccountId, enterpriseAccount.Id, salary.Amount);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"Can't pay salary {salary.Id} to {salary.UserAccountId}");
+                    }
+                }
             }
+        }
+
+        private async Task<(Account, SalaryProject)> DoPreparation(int userAccountId, int salaryProjectId)
+        {
+            var user = await _unitOfWork.GetRepository<Account>().GetByIdAsync(userAccountId)
+                ?? throw new Exception($"Invalid account id {userAccountId}");
+            var project = await _unitOfWork.GetRepository<SalaryProject>().GetByIdAsync(salaryProjectId)
+                ?? throw new Exception($"Invalid salaru project id {salaryProjectId}");
             return (user, project);
         }
     }
