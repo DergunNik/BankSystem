@@ -50,18 +50,42 @@ namespace BankSystem.Aplication.Services
         public async Task CreateRequestAsync(IRequestable requestTarget)
         {
             _logger.LogInformation($"CreateRequestAsync {requestTarget.ToString()}");
+
             try
             {
                 _unitOfWork.BeginTransaction();
-
                 var (repositoryType, typedRepository) = GetRepository(requestTarget);
+
+                var request = new Request()
+                {
+                    RequestEntityId = requestTarget.Id,
+                    IsChecked = false
+                };
+
+                if (requestTarget is Credit)
+                {
+                    request.RequestType = RequestType.Credit;
+                } else if (requestTarget is User)
+                {
+                    request.RequestType = RequestType.User;
+                }
+                else if (requestTarget is SalaryProject)
+                {
+                    request.RequestType = RequestType.SalaryProject;
+                } else
+                {
+                    throw new Exception("Invalid type");
+                }
 
                 var addMethod = repositoryType.GetMethod("AddAsync");
                 if (addMethod != null)
                 {
                     requestTarget.RequestDate = DateTime.UtcNow;
+                    requestTarget.AnswerDate = requestTarget.RequestDate.AddMinutes(-1);
                     await (Task)addMethod.Invoke(typedRepository, new object[] { requestTarget });
                 }
+
+                await _unitOfWork.GetRepository<Request>().AddAsync(request);
 
                 await _unitOfWork.CommitTransactionAsync();
             }

@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Domain.Entities
 {
-    public class Cansel : BankRelatedEntity
+    public class Cansel : BankRelatedEntity, ICansellable
     {
         public CansellationType CansellationType { get; set; }
         public int CanselledEntityId { get; set; }
-        public DateTime Date { get; set; }
+        public DateTime CansellationDate { get; set; }
+        public bool IsCanselled { get; set; } = false;
     }
 }

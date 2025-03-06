@@ -85,14 +85,14 @@ namespace BankSystem.Aplication.Services
 
         public async Task<Account?> GetAccountAsync(int accountId)
         {
-            _logger.LogInformation($"GetAccountAsync {account?.ToString()}");
+            _logger.LogInformation($"GetAccountAsync {accountId}");
             var account = await _unitOfWork.GetRepository<Account>().GetByIdAsync(accountId);
             return account;
         }
 
         public async Task ApplyMonthlyInterestAsync(int accountId)
         {
-            _logger.LogInformation($"ApplyMonthlyInterestAsync {account?.ToString()}");
+            _logger.LogInformation($"ApplyMonthlyInterestAsync {accountId}");
             var account = await _unitOfWork.GetRepository<Account>().GetByIdAsync(accountId);
             if (account is null) throw new Exception($"Account with {accountId} doesn't exist");
 
@@ -133,6 +133,18 @@ namespace BankSystem.Aplication.Services
             _logger.LogInformation($"UnfreezeAccountAsync {account?.ToString()}");
             if (account is null) throw new Exception($"Account with {accountId} doesn't exist");
             account.IsFrozen = false;
+        }
+
+        public async Task<(IReadOnlyCollection<Transfer>, IReadOnlyCollection<BankTransfer>)> GetAccountTransfersAsync(int accountId)
+        {
+            _logger.LogInformation($"GetAccountTransfers {accountId}");
+            var account = await _unitOfWork.GetRepository<Account>().GetByIdAsync(accountId) 
+                ?? throw new Exception($"Invalid account id {accountId}");
+            var transfers = await _unitOfWork.GetRepository<Transfer>()
+                .ListAsync(a => a.SourceAccountId == accountId || a.DestinationAccountId == accountId);
+            var bankTransfers = await _unitOfWork.GetRepository<BankTransfer>()
+                .ListAsync(a => a.AccountId == accountId);
+            return (transfers, bankTransfers);
         }
 
         public bool CanWithdrawFrom(Account account)
