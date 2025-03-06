@@ -49,7 +49,7 @@ namespace BankSystem.Aplication.Services
                     throw new Exception("Not supported type is owner");
             }
 
-            if (account.SavingsAccountUntil < DateTime.UtcNow) throw new Exception("Invalid date");
+            if (account.IsSavingAccount && account.SavingsAccountUntil < DateTime.UtcNow) throw new Exception("Invalid date");
             if (account.MonthlyInterestRate < 0) throw new Exception("Invalid interes rate");
             if (_unitOfWork.GetRepository<Bank>().GetByIdAsync(account.Id).Result is null)
             { 
@@ -68,17 +68,32 @@ namespace BankSystem.Aplication.Services
             _logger.LogInformation($"CreateAccountAsync {account.ToString()} successful");
         }
 
+        public async Task DeleteAccountAsync(int accountId)
+        {
+            _logger.LogInformation($"DeleteAccountAsync {accountId}");
+            var account = await _unitOfWork.GetRepository<Account>().GetByIdAsync(accountId);
+            
+            if (account is null) throw new Exception($"Account with {accountId} doesn't exist");
+            if (account.IsFrozen || account.IsBlocked ||
+                account.IsSavingAccount && account.SavingsAccountUntil >= DateTime.UtcNow)
+            {
+                throw new Exception("Account can't be deleted");
+            }
+            if (account.Balance != 0m) throw new Exception("Account balance is not 0");
+        }
+
+
         public async Task<Account?> GetAccountAsync(int accountId)
         {
-            var account = await _unitOfWork.GetRepository<Account>().GetByIdAsync(accountId);
             _logger.LogInformation($"GetAccountAsync {account?.ToString()}");
+            var account = await _unitOfWork.GetRepository<Account>().GetByIdAsync(accountId);
             return account;
         }
 
         public async Task ApplyMonthlyInterestAsync(int accountId)
         {
-            var account = await _unitOfWork.GetRepository<Account>().GetByIdAsync(accountId);
             _logger.LogInformation($"ApplyMonthlyInterestAsync {account?.ToString()}");
+            var account = await _unitOfWork.GetRepository<Account>().GetByIdAsync(accountId);
             if (account is null) throw new Exception($"Account with {accountId} doesn't exist");
 
             if (account.CreationDate <= DateTime.UtcNow.AddMonths(-1))
@@ -122,12 +137,12 @@ namespace BankSystem.Aplication.Services
 
         public bool CanWithdrawFrom(Account account)
         {
-            return !account.IsFrozen && !account.IsBlocked && !account.IsDeposit;
+            return !account.IsFrozen && !account.IsBlocked && !account.IsSavingAccount;
         }
 
         public bool CanDepositTo(Account account)
         {
-            return !account.IsBlocked && !account.IsDeposit;
+            return !account.IsBlocked && !account.IsSavingAccount;
         }
     }
 }

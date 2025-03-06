@@ -145,6 +145,16 @@ namespace BankSystem.Aplication.Services
                     }
                 }
 
+                var bankTransfer = new BankTransfer()
+                {
+                    AccountId = account.Id,
+                    BankReserveId = reserve.Id,
+                    Amount = amount,
+                    TransferDate = DateTime.UtcNow,
+                    IsIncomingToBank = toBank,
+                };
+                await _unitOfWork.GetRepository<BankTransfer>().AddAsync(bankTransfer);
+
                 await _unitOfWork.CommitTransactionAsync();
             }
             catch (Exception)

@@ -55,6 +55,14 @@ namespace BankSystem.Aplication.Services
                 destinationAccount.Balance += amount;
                 await accountRepository.UpdateAsync(sourceAccount);
                 await accountRepository.UpdateAsync(destinationAccount);
+                var transfer = new Transfer()
+                {
+                    Amount = amount,
+                    SourceAccountId = sourceAccountId,
+                    DestinationAccountId = destinationAccountId,
+                    TransferDate = DateTime.UtcNow
+                };
+
                 await _unitOfWork.CommitTransactionAsync();
             }
             catch (Exception)

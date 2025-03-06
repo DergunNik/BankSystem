@@ -13,8 +13,8 @@ namespace BankSystem.Domain.Entities
         public int OwnerId { get; set; }
         public bool IsBlocked { get; set; }
         public bool IsFrozen{ get; set; }
-        public bool IsDeposit { get; set; }
-        public decimal MonthlyInterestRate { get; set; } // in percents == 1.2 means 1.2%
+        public bool IsSavingAccount { get; set; }
+        public decimal MonthlyInterestRate { get; set; } // in percents, MonthlyInterestRate == 1.2 means 1.2%
         public DateTime CreationDate { get; set; }
         public DateTime SavingsAccountUntil { get; set; }
         public AccountOwnerType OwnerType { get; set; }

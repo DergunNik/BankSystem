@@ -54,7 +54,18 @@ namespace BankSystem.Aplication.Services
             _logger.LogInformation($"RegisterAsync {user.ToString()}");
             var repository = _unitOfWork.GetRepository<User>();
             var thisEmailUserList = await repository.ListAsync(user => user.Email == user.Email);
-            if (thisEmailUserList.ToList<User>().Count == 0)
+
+            bool isEmailUsed = false;
+            foreach(var u in thisEmailUserList)
+            {
+                if (u.IsApproved)
+                {
+                    isEmailUsed = true;
+                    break;
+                }
+            }
+
+            if (isEmailUsed)
             {
                 user.PasswordHash = Argon2.Hash(user.PasswordHash);
                 await _requestService.CreateRequestAsync(user);

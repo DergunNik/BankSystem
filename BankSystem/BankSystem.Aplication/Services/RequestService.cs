@@ -113,10 +113,21 @@ namespace BankSystem.Aplication.Services
                 var requestRepository = _unitOfWork.GetRepository<Request>();
                 RequestType? requestType = null;
 
-                if (requestTarget is User)
+                if (requestTarget is User user)
                 {
                     entityRepository = _unitOfWork.GetRepository<User>();
                     requestType = RequestType.User;
+                    bool isEmailUsed = false;
+                    foreach (var u in _unitOfWork.GetRepository<User>()
+                        .ListAsync(u => u.Email == user.Email).Result)
+                    {
+                        if (u.IsApproved)
+                        {
+                            isEmailUsed = true;
+                            break;
+                        }
+                    }
+                    isApproved = isApproved && !isEmailUsed;
                 }
                 else if (requestTarget is Credit credit)
                 {
@@ -134,7 +145,7 @@ namespace BankSystem.Aplication.Services
                     isApproved = isApproved && enterprise is not null
                                             && await _unitOfWork.GetRepository<Account>()
                                                 .FirstOrDefaultAsync(a => a.OwnerId == enterprise.Id 
-                                                    && a.OwnerType == AccountOwnerType.Enterprise)
+                                                && a.OwnerType == AccountOwnerType.Enterprise)
                                                 is not null;
                 }
                 else
@@ -152,10 +163,7 @@ namespace BankSystem.Aplication.Services
                         await _creditService.InitCreditAsync(((Credit)requestTarget).Id);
                     }
                 }
-                else
-                {
-                    await entityRepository?.DeleteAsync(requestTarget);
-                }
+                
                 var request = await requestRepository.FirstOrDefaultAsync(
                         r => r.RequestType == requestType && r.RequestEntityId == requestTarget.Id);
                 if (request is not null)

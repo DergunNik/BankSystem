@@ -12,6 +12,7 @@ namespace BankSystem.Aplication.ServiceInterfaces
         Task CreateAccountAsync(Account account);
         Task<Account?> GetAccountAsync(int accountId);
         Task ApplyMonthlyInterestAsync(int accountId);
+        Task DeleteAccountAsync(int accountId);
         Task BlockAccountAsync(int accountId);
         Task UnblockAccountAsync(int accountId);
         Task FreezeAccountAsync(int accountId);
