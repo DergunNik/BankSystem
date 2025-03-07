@@ -1,4 +1,4 @@
-﻿using BankSystem.Aplication.ServiceInterfaces;
+﻿using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using BankSystem.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -35,17 +35,20 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync([FromBody] string email, [FromBody] string password)
+        public async Task<IActionResult> LoginAsync(
+            [FromBody] string email, 
+            [FromBody] string password, 
+            [FromBody] int bankId)
         {
-            _logger.LogInformation($"HttpPost(\"register\") {email} {password}");
+            _logger.LogInformation($"HttpPost(\"register\") {email} {password} {bankId}");
             try
             {
-                var token = await _authService.LoginAsync(email, password);
+                var token = await _authService.LoginAsync(email, password, bankId);
                 return Ok(token);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"HttpPost(\"register\") {email} {password}");
+                _logger.LogError(e, $"HttpPost(\"register\") {email} {password} {bankId}");
                 return StatusCode(StatusCodes.Status401Unauthorized, e.Message);
             }
         }

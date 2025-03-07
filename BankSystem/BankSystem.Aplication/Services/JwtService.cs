@@ -29,7 +29,7 @@ namespace BankSystem.Aplication.Services
             _logger.LogInformation($"GenerateToken {user.ToString()}");
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Name, user.Email),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Role, user.UserRole.ToString())
             };
