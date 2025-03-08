@@ -92,5 +92,10 @@ namespace BankSystem.Aplication.Services
             if (spec is null) return null;
             return await _unitOfWork.GetRepository<Enterprise>().GetByIdAsync(spec.EnterpriseId);
         }
+
+        public async Task<Enterprise?> GetEnterpriseAsync(int enterpriseId)
+        {
+            return await _unitOfWork.GetRepository<Enterprise>().GetByIdAsync(enterpriseId);
+        }
     }
 }

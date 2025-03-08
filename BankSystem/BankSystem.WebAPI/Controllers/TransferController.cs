@@ -10,8 +10,9 @@ namespace BankSystem.WebAPI.Controllers
 {
     [Route("api/transfers")]
     [ApiController]
-    public class TransferController : ControllerBase
+    public class TransferController : ExtendedControllerBase
     {
+        private readonly IUserService _userService;
         private readonly ITransferService _transferService;
         private readonly ILogger<TransferController> _logger;
 
@@ -22,8 +23,12 @@ namespace BankSystem.WebAPI.Controllers
             public decimal Amount { get; set; }
         }
 
-        public TransferController(ITransferService transferService, ILogger<TransferController> logger)
+        public TransferController(
+            IUserService userService,
+            ITransferService transferService,
+            ILogger<TransferController> logger)
         {
+            _userService = userService;
             _transferService = transferService;
             _logger = logger;
         }
@@ -49,15 +54,23 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("from-bank/{bankId}")]
+        [HttpGet("from-bank")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
         public async Task<ActionResult<IReadOnlyCollection<Transfer>>>
-            GetTransfersFromBankAsync(int bankId)
+            GetTransfersFromBankAsync()
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"from-bank/{bankId}\")");
-                return Ok(await _transferService.GetTransferFromBank(bankId));
+                _logger.LogInformation($"HttpGet(\"from-bank\")");
+
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
+                return Ok(await _transferService.GetTransferFromBank(user.BankId));
             }
             catch (Exception e)
             {
@@ -74,8 +87,19 @@ namespace BankSystem.WebAPI.Controllers
             try
             {
                 _logger.LogInformation($"HttpGet(\"{transferId}\")");
+
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
                 var transfer = await _transferService.GetTransferAsync(transferId);
                 if (transfer is null) return NotFound();
+
+                if (transfer.BankId != user.BankId) return Conflict("Other bank");
+
                 return Ok(transfer);
             }
             catch (Exception e)
@@ -92,16 +116,10 @@ namespace BankSystem.WebAPI.Controllers
             try
             {
                 _logger.LogInformation("HttpGet(\"my-transfers\")");
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-                if (userIdClaim == null)
-                {
-                    return Unauthorized("User ID not found in token.");
-                }
-                if (!int.TryParse(userIdClaim.Value, out int userId))
-                {
-                    return BadRequest("Invalid user ID.");
-                }
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
 
                 var accounts = await _transferService.GetUserTransfersAsync(userId);
                 return Ok(accounts);

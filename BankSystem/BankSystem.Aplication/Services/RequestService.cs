@@ -90,10 +90,11 @@ namespace BankSystem.Aplication.Services
             }   
         }
 
-        public async Task<IReadOnlyCollection<Request>> GetRequestsAsync(RequestType requestType)
+        public async Task<IReadOnlyCollection<Request>> GetRequestsAsync(RequestType requestType, int bankId)
         {
             _logger.LogInformation($"GetRequecstsAsync {requestType.ToString()}");
-            var res = await _unitOfWork.GetRepository<Request>().ListAsync(r => r.RequestType == requestType);
+            var res = await _unitOfWork.GetRepository<Request>()
+                .ListAsync(r => r.RequestType == requestType && r.BankId == bankId);
             return res.ToList().AsReadOnly();
         }
 

@@ -15,5 +15,6 @@ namespace BankSystem.Domain.Abstractions.ServiceInterfaces
         /// </summary>
         Task RemoveExternalSpecialistAsync(int userId);
         Task<Enterprise?> GetExternalSpecialistEnterpriseAsync(int userId);
+        Task<Enterprise?> GetEnterpriseAsync(int enterpriseId);
     }
 }

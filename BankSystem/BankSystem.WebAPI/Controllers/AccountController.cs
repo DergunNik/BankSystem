@@ -10,7 +10,7 @@ namespace BankSystem.WebAPI.Controllers
 {
     [Route("api/accounts")]
     [ApiController]
-    public class AccountController : ControllerBase
+    public class AccountController : ExtendedControllerBase
     {
         private readonly IRequestService _requestService;
         private readonly IUserService _userService;
@@ -49,16 +49,9 @@ namespace BankSystem.WebAPI.Controllers
                     return Conflict("Bad args.");
                 }
 
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                
-                if (userIdClaim == null)
-                {
-                    return Unauthorized("User ID not found in token.");
-                }
-                if (!int.TryParse(userIdClaim.Value, out int userId))
-                {
-                    return BadRequest("Invalid user ID.");
-                }
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
 
                 var user = await _userService.GetUserAsync(userId);
                 if (user is null) return BadRequest("Invalid user ID.");
@@ -94,12 +87,26 @@ namespace BankSystem.WebAPI.Controllers
             try
             {
                 _logger.LogInformation($"HttpGet(\"{accountId}\"");
+
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
                 var account = await _accountService.GetAccountAsync(accountId);
                 if (account is null)
                 {
                     _logger.LogWarning($"Account with ID {accountId} not found.");
                     return NotFound("Account not found.");
                 }
+
+                if (user.BankId != account.BankId)
+                {
+                    return BadRequest("Account is from other bank.");
+                }
+
                 return Ok(account);
             }
             catch (Exception e)
@@ -109,14 +116,22 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("from-bank/{bankId}")]
+        [HttpGet("from-bank")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
-        public async Task<ActionResult> GetAccountsAsync(int bankId)
+        public async Task<ActionResult> GetAccountsAsync()
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"from-bank/{bankId}\")");
-                var accounts = await _accountService.GetAccountFromBankAsync(bankId);
+                _logger.LogInformation($"HttpGet(\"from-bank\")");
+
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
+                var accounts = await _accountService.GetAccountFromBankAsync(user.BankId);
                 return Ok(accounts);
             }
             catch (Exception e)
@@ -133,16 +148,10 @@ namespace BankSystem.WebAPI.Controllers
             try
             {
                 _logger.LogInformation("HttpGet(\"my-accounts\")");
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-                if (userIdClaim == null)
-                {
-                    return Unauthorized("User ID not found in token.");
-                }
-                if (!int.TryParse(userIdClaim.Value, out int userId))
-                {
-                    return BadRequest("Invalid user ID.");
-                }
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
 
                 var accounts = await _accountService.GetUserAccountsAsync(userId);
                 return Ok(accounts);

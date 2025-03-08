@@ -13,7 +13,7 @@ namespace BankSystem.Domain.Abstractions.ServiceInterfaces
         Task CreateRequestAsync(IRequestable requestTarget);
         Task ApproveRequestAsync(Request request);
         Task RejectRequestAsync(Request request);
-        Task<IReadOnlyCollection<Request>> GetRequestsAsync(RequestType requestType);
+        Task<IReadOnlyCollection<Request>> GetRequestsAsync(RequestType requestType, int bankId);
         Task<IRequestable> GetRequestEntityAsync(Request request);
         Task<Request?> GetRequestByIdAsync(int id);
     }

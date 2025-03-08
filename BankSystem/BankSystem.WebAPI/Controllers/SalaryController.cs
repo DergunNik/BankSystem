@@ -11,11 +11,13 @@ namespace BankSystem.WebAPI.Controllers
 {
     [Route("api/salaries")]
     [ApiController]
-    public class SalaryController : ControllerBase
+    public class SalaryController : ExtendedControllerBase
     {
+        private readonly IUserService _userService;
         private readonly ISalaryService _salaryService;
         private readonly IRequestService _requestService;
         private readonly IAccountService _accountService;
+        private readonly IEnterpriseService _enterpriseService;
         private readonly ILogger<SalaryController> _logger;
 
         public class SalaryDto
@@ -26,11 +28,13 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         public SalaryController(
+            IUserService userService,
             ISalaryService salaryService, 
             ILogger<SalaryController> logger, 
             IRequestService requestService,
             IAccountService accountService)
         {
+            _userService = userService;
             _salaryService = salaryService;
             _logger = logger;
             _requestService = requestService;
@@ -44,8 +48,18 @@ namespace BankSystem.WebAPI.Controllers
             try
             {
                 _logger.LogInformation($"HttpGet(\"{id}\")");
+
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
                 var salary = await _salaryService.GetSalaryAsync(id);
                 if (salary is null) return NotFound();
+                if (user.BankId != salary.BankId) return Conflict("From other bank");
+
                 return Ok(salary);
             }
             catch (Exception e)
@@ -55,14 +69,22 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
   
-        [HttpGet("from-bank/{bankId}")]
+        [HttpGet("from-bank")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
-        public async Task<ActionResult<IReadOnlyCollection<Salary>>> GetSalariesFromBankAsync(int bankId)
+        public async Task<ActionResult<IReadOnlyCollection<Salary>>> GetSalariesFromBankAsync()
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"from-bank/{bankId}\")");
-                var accounts = await _salaryService.GetSalariesFromBankAsync(bankId);
+                _logger.LogInformation($"HttpGet(\"from-bank\")");
+
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
+                var accounts = await _salaryService.GetSalariesFromBankAsync(user.BankId);
                 return Ok(accounts);
             }
             catch (Exception e)
@@ -73,12 +95,32 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         [HttpGet("of-enterprise/{enterpriseId}")]
-        [Authorize(Roles = "Operator,Manager,Administrator")]
+        [Authorize(Roles = "ExternalSpecialist,Operator,Manager,Administrator")]
         public async Task<ActionResult<IReadOnlyCollection<Salary>>> GetSalariesOfEnterpriseAsync(int enterpriseId)
         {
             try
             {
                 _logger.LogInformation($"HttpGet(\"of-enterprise/{enterpriseId}\")");
+
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
+                var enterprise = await _enterpriseService.GetEnterpriseAsync(enterpriseId);
+                if (enterprise is null) return BadRequest();
+
+                if (enterprise.BankId != user.BankId) return Conflict("From other bank");
+
+                if (user.UserRole == UserRole.ExternalSpecialist)
+                {
+                    var userEnterprise = await _enterpriseService.GetExternalSpecialistEnterpriseAsync(userId);
+                    if (userEnterprise is null) return BadRequest("Not enterprise worker");
+                    if (enterpriseId != userEnterprise.Id) return Conflict("Salaries of other enterprise");
+                }
+
                 var accounts = await _salaryService.GetEnterpriseSalariesAsync(enterpriseId);
                 return Ok(accounts);
             }
@@ -96,6 +138,19 @@ namespace BankSystem.WebAPI.Controllers
             try
             {
                 _logger.LogInformation($"HttpGet(\"of-user/{userId}\")");
+
+                int adminId;
+                try { adminId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var admin = await _userService.GetUserAsync(adminId);
+                if (admin is null) return BadRequest("Invalid user ID.");
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
+                if (admin.BankId != user.BankId) return Conflict("Other bank");
+                    
                 var accounts = await _salaryService.GetUserSalariesAsync(userId);
                 return Ok(accounts);
             }
@@ -113,16 +168,10 @@ namespace BankSystem.WebAPI.Controllers
             try
             {
                 _logger.LogInformation($"HttpGet(\"my-salaries\")");
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
 
-                if (userIdClaim == null)
-                {
-                    return Unauthorized("User ID not found in token.");
-                }
-                if (!int.TryParse(userIdClaim.Value, out int userId))
-                {
-                    return BadRequest("Invalid user ID.");
-                }
                 var accounts = await _salaryService.GetUserSalariesAsync(userId);
                 return Ok(accounts);
             }
@@ -150,16 +199,16 @@ namespace BankSystem.WebAPI.Controllers
                     return BadRequest();
                 }
 
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (userIdClaim == null)
-                {
-                    return Unauthorized("User ID not found in token.");
-                }
-                if (!int.TryParse(userIdClaim.Value, out int userId))
-                {
-                    return BadRequest("Invalid user ID.");
-                }
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
                 if (account.OwnerId != userId) return BadRequest();
+                if (project.BankId != user.BankId 
+                    || account.BankId != user.BankId) return Conflict("Other bank");
 
                 var salary = new Salary
                 {
@@ -179,12 +228,42 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         [HttpDelete("remove/{id}")]
-        [Authorize(Roles = "Client,ExternalSpecialist")]
+        [Authorize(Roles = "Client,ExternalSpecialist,Operator,Manager,Administrator")]
         public async Task<ActionResult> RemoveSalaryAsync(int id)
         {
             try
             {
                 _logger.LogInformation($"HttpDelete(\"remove/{id}\")");
+
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
+                var salary = await _salaryService.GetSalaryAsync(id);
+                if (salary is null) return BadRequest("Invalid salary ID.");
+
+                if (user.UserRole == UserRole.Client)
+                {
+                    var account = await _accountService.GetAccountAsync(salary.UserAccountId);
+                    if (account is null) return BadRequest("Invalid account ID.");
+
+                    if (account.OwnerType != AccountOwnerType.IndividualUser
+                        && account.OwnerId != userId)
+                    {
+                        return Conflict("Not person's salary");
+                    }
+                }
+                else if (user.UserRole == UserRole.ExternalSpecialist)
+                {
+                    var project = await _salaryService.GetSalaryProjectAsync(salary.SalaryProjectId);
+                    var userEnterprise = await _enterpriseService.GetExternalSpecialistEnterpriseAsync(userId);
+                    if (project is null || userEnterprise is null) return BadRequest("Wrong id");
+                    if (userEnterprise.Id != project.EnterpriseId) return Conflict("Other enterprise");
+                }
+
                 await _salaryService.RemoveSalaryAsync(id);
                 return NoContent();
             }
@@ -196,12 +275,27 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         [HttpDelete("remove/of-enterprise/{enterpriseId}")]
-        [Authorize(Roles = "ExternalSpecialist")]
+        [Authorize(Roles = "ExternalSpecialist,Operator,Manager,Administrator")]
         public async Task<ActionResult> RemoveEnterpriseSalariesAsync(int enterpriseId)
         {
             try
             {
                 _logger.LogInformation($"HttpDelete(\"remove/of-enterprise/{enterpriseId}\")");
+
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
+                if (user.UserRole == UserRole.ExternalSpecialist)
+                {
+                    var userEnterprise = await _enterpriseService.GetExternalSpecialistEnterpriseAsync(userId);
+                    if (userEnterprise is null) return BadRequest("Wrong id");
+                    if (userEnterprise.Id != enterpriseId) return Conflict("Other enterprise");
+                }
+
                 var salaries = await _salaryService.GetEnterpriseSalariesAsync(enterpriseId);
                 foreach (var salary in salaries)
                 {
