@@ -11,11 +11,10 @@ namespace BankSystem.Domain.Abstractions.ServiceInterfaces
     public interface IRequestService
     {
         Task CreateRequestAsync(IRequestable requestTarget);
-        Task ApproveRequestAsync(IRequestable requestTarget);
-        Task RejectRequestAsync(IRequestable requestTarget);
         Task ApproveRequestAsync(Request request);
         Task RejectRequestAsync(Request request);
-        Task<IReadOnlyCollection<Request>> GetRequecstsAsync(RequestType requestType);
+        Task<IReadOnlyCollection<Request>> GetRequestsAsync(RequestType requestType);
         Task<IRequestable> GetRequestEntityAsync(Request request);
+        Task<Request?> GetRequestByIdAsync(int id);
     }
 }

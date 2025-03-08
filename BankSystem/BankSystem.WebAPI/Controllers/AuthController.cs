@@ -6,11 +6,18 @@ using Microsoft.AspNetCore.Mvc;
 namespace BankSystem.WebAPI.Controllers
 {
     [ApiController]
-    [Route("authorization")]
+    [Route("api/authorization")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
         private readonly ILogger<AuthController> _logger;
+
+        public class LoginRequestDto
+        {
+            public string Email { get; set; }
+            public string Password { get; set; }
+            public int BankId { get; set; }
+        }
 
         public AuthController(IAuthService authService, ILogger<AuthController> logger)
         {
@@ -19,7 +26,7 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync([FromBody] User user)
+        public async Task<ActionResult> RegisterAsync([FromBody] User user)
         {
             _logger.LogInformation($"HttpPost(\"register\") {user.ToString()}");
             try
@@ -35,12 +42,13 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync(
-            [FromBody] string email, 
-            [FromBody] string password, 
-            [FromBody] int bankId)
+        public async Task<ActionResult> LoginAsync(
+            [FromBody] LoginRequestDto args)
         {
-            _logger.LogInformation($"HttpPost(\"register\") {email} {password} {bankId}");
+            var email = args.Email;
+            var password = args.Password;
+            var bankId = args.BankId;
+            _logger.LogInformation($"HttpPost(\"login\") {email} {bankId}");
             try
             {
                 var token = await _authService.LoginAsync(email, password, bankId);
@@ -48,7 +56,7 @@ namespace BankSystem.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"HttpPost(\"register\") {email} {password} {bankId}");
+                _logger.LogError(e, $"HttpPost(\"login\") {email} {bankId}");
                 return StatusCode(StatusCodes.Status401Unauthorized, e.Message);
             }
         }

@@ -71,5 +71,21 @@ namespace BankSystem.Aplication.Services
                 throw;
             }
         }
+
+        public async Task<Transfer?> GetTransferAsync(int transferId)
+        {
+            return await _unitOfWork.GetRepository<Transfer>().GetByIdAsync(transferId);
+        }
+
+        public async Task<IReadOnlyCollection<Transfer>> GetTransferFromBank(int bankId)
+        {
+            return await _unitOfWork.GetRepository<Transfer>().ListAsync(t => t.BankId == bankId);
+        }
+
+        public async Task<IReadOnlyCollection<Transfer>> GetUserTransfersAsync(int userId)
+        {
+            return await _unitOfWork.GetRepository<Transfer>()
+                .ListAsync(t => t.SourceAccountId == userId || t.DestinationAccountId == userId);
+        }
     }
 }

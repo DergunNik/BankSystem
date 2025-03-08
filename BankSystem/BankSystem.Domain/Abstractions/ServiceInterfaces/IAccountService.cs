@@ -19,6 +19,9 @@ namespace BankSystem.Domain.Abstractions.ServiceInterfaces
         Task UnfreezeAccountAsync(int accountId);
         Task<(IReadOnlyCollection<Transfer>, IReadOnlyCollection<BankTransfer>)>
             GetAccountTransfersAsync(int accountId);
+        Task<IReadOnlyCollection<Account>>
+            GetAccountFromBankAsync(int bankId);
+        Task<IReadOnlyCollection<Account>> GetUserAccountsAsync(int userId);
         bool CanWithdrawFrom(Account account);
         bool CanDepositTo(Account account);
     }

@@ -146,6 +146,21 @@ namespace BankSystem.Aplication.Services
             return (transfers, bankTransfers);
         }
 
+        public async Task<IReadOnlyCollection<Account>> GetAccountFromBankAsync(int bankId)
+        {
+            _logger.LogInformation($"GetAccountFromBankAsync {bankId}");
+            var res = await _unitOfWork.GetRepository<Account>().ListAsync(a => a.BankId == bankId);
+            return res.ToList().AsReadOnly();
+        }
+
+        public async Task<IReadOnlyCollection<Account>> GetUserAccountsAsync(int userId)
+        {
+            _logger.LogInformation($"GetUsersAccountAsync {userId}");
+            var res = await _unitOfWork.GetRepository<Account>()
+                .ListAsync(a => a.OwnerType == AccountOwnerType.IndividualUser && a.OwnerId == userId);
+            return res.ToList().AsReadOnly();
+        }
+
         public bool CanWithdrawFrom(Account account)
         {
             return !account.IsFrozen && !account.IsBlocked && !account.IsSavingAccount;

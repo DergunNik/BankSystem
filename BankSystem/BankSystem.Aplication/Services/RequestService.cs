@@ -24,27 +24,16 @@ namespace BankSystem.Aplication.Services
             _logger = logger;
         }
 
-        public async Task ApproveRequestAsync(IRequestable requestTarget)
-        {
-            _logger.LogInformation($"ApproveRequestAsync {requestTarget.ToString()}");
-            await HandleRequestAsync(true, requestTarget);
-        }
-
-        public async Task RejectRequestAsync(IRequestable requestTarget)
-        {
-            _logger.LogInformation($"RejectRequestAsync {requestTarget.ToString()}");
-            await HandleRequestAsync(false, requestTarget);
-        }
         public async Task ApproveRequestAsync(Request request)
         {
             _logger.LogInformation($"ApproveRequestAsync {request.ToString()}");
-            await ApproveRequestAsync(await GetRequestEntityAsync(request));
+            await ApproveRequestAsync(await GetRequestEntityAsync(request), request);
         }
 
         public async Task RejectRequestAsync(Request request)
         {
             _logger.LogInformation($"RejectRequestAsync {request.ToString()}");
-            await RejectRequestAsync(await GetRequestEntityAsync(request));
+            await RejectRequestAsync(await GetRequestEntityAsync(request), request);
         }
 
         public async Task CreateRequestAsync(IRequestable requestTarget)
@@ -96,7 +85,7 @@ namespace BankSystem.Aplication.Services
             }   
         }
 
-        public async Task<IReadOnlyCollection<Request>> GetRequecstsAsync(RequestType requestType)
+        public async Task<IReadOnlyCollection<Request>> GetRequestsAsync(RequestType requestType)
         {
             _logger.LogInformation($"GetRequecstsAsync {requestType.ToString()}");
             var res = await _unitOfWork.GetRepository<Request>().ListAsync(r => r.RequestType == requestType);
@@ -127,7 +116,24 @@ namespace BankSystem.Aplication.Services
             return await entityRepository.GetByIdAsync(request.SenderId);
         }
 
-        private async Task HandleRequestAsync(bool isApproved, IRequestable requestTarget)
+        public async Task<Request?> GetRequestByIdAsync(int id)
+        {
+            return await _unitOfWork.GetRepository<Request>().GetByIdAsync(id);
+        }
+
+        private async Task ApproveRequestAsync(IRequestable requestTarget, Request request)
+        {
+            _logger.LogInformation($"ApproveRequestAsync {requestTarget.ToString()}");
+            await HandleRequestAsync(true, requestTarget, request);
+        }
+
+        private async Task RejectRequestAsync(IRequestable requestTarget, Request request)
+        {
+            _logger.LogInformation($"RejectRequestAsync {requestTarget.ToString()}");
+            await HandleRequestAsync(false, requestTarget, request);
+        }
+
+        private async Task HandleRequestAsync(bool isApproved, IRequestable requestTarget, Request request)
         {
             try
             {
@@ -188,8 +194,6 @@ namespace BankSystem.Aplication.Services
                     }
                 }
                 
-                var request = await requestRepository.FirstOrDefaultAsync(
-                        r => r.RequestType == requestType && r.RequestEntityId == requestTarget.Id);
                 if (request is not null)
                 {
                     request.IsChecked = true;
