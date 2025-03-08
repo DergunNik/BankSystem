@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace BankSystem.WebAPI.Controllers
 {
-    [Route("api/transfer")]
+    [Route("api/transfers")]
     [ApiController]
     public class TransferController : ControllerBase
     {
@@ -33,9 +33,9 @@ namespace BankSystem.WebAPI.Controllers
         public async Task<ActionResult>
             TransferAsync([FromBody] TransferDto transferDto)
         {
-            _logger.LogInformation("HttpPost");
             try
             {
+                _logger.LogInformation("HttpPost");
                 await _transferService.TransferAsync(
                     transferDto.SourceAccountId,
                     transferDto.DestinationAccountId,
@@ -54,9 +54,9 @@ namespace BankSystem.WebAPI.Controllers
         public async Task<ActionResult<IReadOnlyCollection<Transfer>>>
             GetTransfersFromBankAsync(int bankId)
         {
-            _logger.LogInformation($"HttpGet(\"from-bank/{bankId}\")");
             try
             {
+                _logger.LogInformation($"HttpGet(\"from-bank/{bankId}\")");
                 return Ok(await _transferService.GetTransferFromBank(bankId));
             }
             catch (Exception e)
@@ -71,9 +71,9 @@ namespace BankSystem.WebAPI.Controllers
         public async Task<ActionResult<Transfer>>
             GetTransferAsync(int transferId)
         {
-            _logger.LogInformation($"HttpGet(\"{transferId}\")");
             try
             {
+                _logger.LogInformation($"HttpGet(\"{transferId}\")");
                 var transfer = await _transferService.GetTransferAsync(transferId);
                 if (transfer is null) return NotFound();
                 return Ok(transfer);
@@ -89,9 +89,9 @@ namespace BankSystem.WebAPI.Controllers
         [Authorize(Roles = "Client")]
         public async Task<ActionResult> GetMyTransfersAsync()
         {
-            _logger.LogInformation("HttpGet(\"my-transfers\")");
             try
             {
+                _logger.LogInformation("HttpGet(\"my-transfers\")");
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
                 if (userIdClaim == null)

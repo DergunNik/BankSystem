@@ -53,6 +53,21 @@ namespace BankSystem.Aplication.Services
             await _unitOfWork.CommitTransactionAsync();
         }
 
+        public async Task<Salary?> GetSalaryAsync(int salaryId)
+        {
+            return await _unitOfWork.GetRepository<Salary>().GetByIdAsync(salaryId);
+        }
+
+        public async Task<SalaryProject?> GetSalaryProjectAsync(int projectId)
+        {
+            return await _unitOfWork.GetRepository<SalaryProject>().GetByIdAsync(projectId);
+        }
+
+        public async Task<IReadOnlyCollection<Salary>> GetSalariesFromBankAsync(int bankId)
+        {
+            return await _unitOfWork.GetRepository<Salary>().ListAsync(s => s.BankId == bankId);
+        }
+
         public async Task<IReadOnlyCollection<Salary>> GetEnterpriseSalariesAsync(int enterpriseId)
         {
             _logger.LogInformation($"GetEnterpriseSalariesAsync {enterpriseId}");

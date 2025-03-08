@@ -28,9 +28,9 @@ namespace BankSystem.WebAPI.Controllers
         [HttpPost("register")]
         public async Task<ActionResult> RegisterAsync([FromBody] User user)
         {
-            _logger.LogInformation($"HttpPost(\"register\") {user.ToString()}");
             try
             {
+                _logger.LogInformation($"HttpPost(\"register\") {user.ToString()}");
                 await _authService.RegisterAsync(user);
                 return Ok();
             }
@@ -48,9 +48,9 @@ namespace BankSystem.WebAPI.Controllers
             var email = args.Email;
             var password = args.Password;
             var bankId = args.BankId;
-            _logger.LogInformation($"HttpPost(\"login\") {email} {bankId}");
             try
             {
+                _logger.LogInformation($"HttpPost(\"login\") {email} {bankId}");
                 var token = await _authService.LoginAsync(email, password, bankId);
                 return Ok(token);
             }

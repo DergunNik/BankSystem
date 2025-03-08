@@ -40,9 +40,9 @@ namespace BankSystem.WebAPI.Controllers
         [Authorize(Roles = "Client")]
         public async Task<ActionResult> AddAccountAsync([FromBody] AccountDto accountDto)
         {
-            _logger.LogInformation("HttpPost");
             try
             {
+                _logger.LogInformation("HttpPost");
                 if (accountDto.IsSavingAccount && (accountDto.MonthlyInterestRate < 0 
                     || accountDto.SavingsAccountUntil < DateTime.UtcNow))
                 {
@@ -91,9 +91,9 @@ namespace BankSystem.WebAPI.Controllers
         [Authorize(Roles = "Operator,Manager,Administrator")]
         public async Task<ActionResult> GetAccountAsync(int accountId)
         {
-            _logger.LogInformation($"HttpGet(\"{accountId}\"");
             try
             {
+                _logger.LogInformation($"HttpGet(\"{accountId}\"");
                 var account = await _accountService.GetAccountAsync(accountId);
                 if (account is null)
                 {
@@ -113,9 +113,9 @@ namespace BankSystem.WebAPI.Controllers
         [Authorize(Roles = "Operator,Manager,Administrator")]
         public async Task<ActionResult> GetAccountsAsync(int bankId)
         {
-            _logger.LogInformation($"HttpGet(\"from-bank/{bankId}\")");
             try
             {
+                _logger.LogInformation($"HttpGet(\"from-bank/{bankId}\")");
                 var accounts = await _accountService.GetAccountFromBankAsync(bankId);
                 return Ok(accounts);
             }
@@ -130,9 +130,9 @@ namespace BankSystem.WebAPI.Controllers
         [Authorize(Roles = "Client")]
         public async Task<ActionResult> GetMyAccountsAsync()
         {
-            _logger.LogInformation("HttpGet(\"my-accounts\")");
             try
             {
+                _logger.LogInformation("HttpGet(\"my-accounts\")");
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
                 if (userIdClaim == null)

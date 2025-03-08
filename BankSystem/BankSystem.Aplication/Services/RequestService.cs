@@ -61,7 +61,12 @@ namespace BankSystem.Aplication.Services
                 else if (requestTarget is SalaryProject)
                 {
                     request.RequestType = RequestType.SalaryProject;
-                } else
+                } 
+                else if (requestTarget is Salary)
+                {
+                    request.RequestType = RequestType.Salary;
+                }
+                else
                 {
                     throw new Exception("Invalid type");
                 }
@@ -96,7 +101,6 @@ namespace BankSystem.Aplication.Services
         {
             _logger.LogInformation($"GetRequestEntity {request.ToString()}");
             dynamic? entityRepository = null;
-            RequestType? requestType = null;
 
             switch (request.RequestType)
             {
@@ -108,6 +112,9 @@ namespace BankSystem.Aplication.Services
                     break;
                 case RequestType.SalaryProject:
                     entityRepository = _unitOfWork.GetRepository<SalaryProject>();
+                    break;
+                case RequestType.Salary:
+                    entityRepository = _unitOfWork.GetRepository<Salary>();
                     break;
                 default:
                     throw new Exception("Not supported type is requestable");
@@ -177,6 +184,16 @@ namespace BankSystem.Aplication.Services
                                                 .FirstOrDefaultAsync(a => a.OwnerId == enterprise.Id 
                                                 && a.OwnerType == AccountOwnerType.Enterprise)
                                                 is not null;
+                }
+                else if (requestTarget is Salary salary)
+                {
+                    entityRepository = _unitOfWork.GetRepository<Salary>();
+                    requestType = RequestType.Salary;
+                    var salaryAccount = await _unitOfWork.GetRepository<Account>().GetByIdAsync(salary.UserAccountId);
+                    var salaryProject = await _unitOfWork.GetRepository<SalaryProject>().GetByIdAsync(salary.SalaryProjectId);
+                    isApproved = isApproved && salaryAccount is not null
+                                            && salaryProject is not null
+                                            && salary.Amount > 0m;
                 }
                 else
                 {

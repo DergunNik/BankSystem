@@ -34,9 +34,9 @@ namespace BankSystem.WebAPI.Controllers
         public async Task<ActionResult<IReadOnlyCollection<Request>>>
             GetSalaryProjectRequestsAsync()
         {
-            _logger.LogInformation($"HttpGet(\"salary-projects\")");
             try
             {
+                _logger.LogInformation($"HttpGet(\"salary-projects\")");
                 var requests = await _requestService.GetRequestsAsync(RequestType.SalaryProject);
 
                 if (requests == null || !requests.Any())
@@ -53,14 +53,38 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
+        [HttpGet("salaries")]
+        [Authorize(Roles = "Operator,Manager,Administrator")]
+        public async Task<ActionResult<IReadOnlyCollection<Request>>>
+            GetSalaryRequestsAsync()
+        {
+            try
+            {
+                _logger.LogInformation($"HttpGet(\"salary-projects\")");
+                var requests = await _requestService.GetRequestsAsync(RequestType.Salary);
+
+                if (requests == null || !requests.Any())
+                {
+                    return NoContent();
+                }
+
+                return Ok(requests);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error fetching salary project requests");
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
         [HttpGet("users")]
         [Authorize(Roles = "Manager,Administrator")]
         public async Task<ActionResult<IReadOnlyCollection<Request>>>
             GetUserRequestsAsync()
         {
-            _logger.LogInformation($"HttpGet(\"users\")");
             try
             {
+                _logger.LogInformation($"HttpGet(\"users\")");
                 var requests = await _requestService.GetRequestsAsync(RequestType.User);
 
                 if (requests == null || !requests.Any())
@@ -82,9 +106,9 @@ namespace BankSystem.WebAPI.Controllers
         public async Task<ActionResult<IReadOnlyCollection<Request>>>
             GetCreditRequestsAsync()
         {
-            _logger.LogInformation($"HttpGet(\"credits\")");
             try
             {
+                _logger.LogInformation($"HttpGet(\"credits\")");
                 var requests = await _requestService.GetRequestsAsync(RequestType.Credit);
 
                 if (requests == null || !requests.Any())
@@ -108,9 +132,9 @@ namespace BankSystem.WebAPI.Controllers
         public async Task<ActionResult>
             AnswerSalaryProjectRequestAsync([FromBody] RequestAnswerDto answer)
         {
-            _logger.LogInformation($"HttpPost(\"salary-projects\") {answer.RequestId} {answer.IsApproved}");
             try
             {
+                _logger.LogInformation($"HttpPost(\"salary-projects\") {answer.RequestId} {answer.IsApproved}");
                 var request = await _requestService.GetRequestByIdAsync(answer.RequestId);
                 
                 if (request is null) return NoContent();
@@ -135,14 +159,46 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
+        [HttpPost("salaries")]
+        [Authorize(Roles = "Operator,Manager,Administrator")]
+        public async Task<ActionResult>
+            AnswerSalaryRequestAsync([FromBody] RequestAnswerDto answer)
+        {
+            try
+            {
+                _logger.LogInformation($"HttpPost(\"salaries\") {answer.RequestId} {answer.IsApproved}");
+                var request = await _requestService.GetRequestByIdAsync(answer.RequestId);
+
+                if (request is null) return NoContent();
+                if (request.IsChecked) return Conflict("Request has already been processed.");
+                if (request.RequestType != RequestType.Salary) return BadRequest();
+
+                if (answer.IsApproved)
+                {
+                    await _requestService.ApproveRequestAsync(request);
+                }
+                else
+                {
+                    await _requestService.RejectRequestAsync(request);
+                }
+
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error answering salary request");
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
         [HttpPost("users-or-credits")]
         [Authorize(Roles = "Manager,Administrator")]
         public async Task<ActionResult>
             AnswerUserOrCreditRequestAsync([FromBody] RequestAnswerDto answer)
         {
-            _logger.LogInformation($"HttpPost(\"users-or-credits\") {answer.RequestId} {answer.IsApproved}");
             try
             {
+                _logger.LogInformation($"HttpPost(\"users-or-credits\") {answer.RequestId} {answer.IsApproved}");
                 var request = await _requestService.GetRequestByIdAsync(answer.RequestId);
 
                 if (request is null) return NoContent();

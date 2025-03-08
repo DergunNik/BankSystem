@@ -10,6 +10,7 @@ namespace BankSystem.Domain.Enums
     {
         Credit,
         User,
-        SalaryProject
+        SalaryProject,
+        Salary
     }
 }
