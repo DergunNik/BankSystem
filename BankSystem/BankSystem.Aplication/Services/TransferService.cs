@@ -1,10 +1,12 @@
 ﻿using BankSystem.Domain.Abstractions;
 using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using BankSystem.Domain.Entities;
+using BankSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using System.Threading.Tasks;
@@ -77,15 +79,26 @@ namespace BankSystem.Aplication.Services
             return await _unitOfWork.GetRepository<Transfer>().GetByIdAsync(transferId);
         }
 
-        public async Task<IReadOnlyCollection<Transfer>> GetTransferFromBank(int bankId)
+        public async Task<IReadOnlyList<Transfer>> GetTransferFromBank(int bankId)
         {
             return await _unitOfWork.GetRepository<Transfer>().ListAsync(t => t.BankId == bankId);
         }
 
-        public async Task<IReadOnlyCollection<Transfer>> GetUserTransfersAsync(int userId)
+        public async Task<IReadOnlyList<Transfer>> GetUserTransfersAsync(int userId)
         {
-            return await _unitOfWork.GetRepository<Transfer>()
-                .ListAsync(t => t.SourceAccountId == userId || t.DestinationAccountId == userId);
+            var userAccounts = await _unitOfWork.GetRepository<Account>()
+                .ListAsync(a => a.OwnerType == AccountOwnerType.IndividualUser && a.OwnerId == userId);
+            List<Transfer> ret = [];
+            foreach (var account in userAccounts)
+            {
+                var accountTransfers = await _unitOfWork.GetRepository<Transfer>()
+                    .ListAsync(t => t.SourceAccountId == account.Id || t.DestinationAccountId == account.Id);
+                foreach (var transfer in accountTransfers)
+                {
+                    ret.Add(transfer);
+                }
+            }
+            return ret.AsReadOnly();
         }
     }
 }

@@ -84,6 +84,90 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
+        [HttpPost("block/{accountId:int}/{isBlocked:bool}")]
+        [Authorize(Roles = "Manager,Administrator")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> HandleAccountBlockingAsync(int accountId, bool isBlocked)
+        {
+            try
+            {
+                _logger.LogInformation($"HttpPost(\"block/{accountId}/{isBlocked}\")");
+                
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
+                var account = await _accountService.GetAccountAsync(accountId);
+                if (account is null) return BadRequest("Invalid account ID.");
+
+                if (account.BankId != user.BankId) return Conflict("Other bank");
+
+                if (isBlocked)
+                {
+                    await _accountService.BlockAccountAsync(accountId);
+                }
+                else
+                {
+                    await _accountService.UnblockAccountAsync(accountId);
+                }
+
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error (un)blocking account");
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+        [HttpPost("freeze/{accountId:int}/{isFreezed:bool}")]
+        [Authorize(Roles = "Manager,Administrator")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> HandleAccountFreezingAsync(int accountId, bool isFreezed)
+        {
+            try
+            {
+                _logger.LogInformation($"HttpPost(\"freeze/{accountId}/{isFreezed}\")");
+
+                int userId;
+                try { userId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
+                var account = await _accountService.GetAccountAsync(accountId);
+                if (account is null) return BadRequest("Invalid account ID.");
+
+                if (account.BankId != user.BankId) return Conflict("Other bank");
+
+                if (isFreezed)
+                {
+                    await _accountService.FreezeAccountAsync(accountId);
+                }
+                else
+                {
+                    await _accountService.UnfreezeAccountAsync(accountId);
+                }
+
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error (un)freezing account");
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
         [HttpGet("{accountId:int}")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
         [ProducesResponseType(typeof(Account), StatusCodes.Status200OK)]

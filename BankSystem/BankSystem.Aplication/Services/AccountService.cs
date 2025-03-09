@@ -80,6 +80,7 @@ namespace BankSystem.Aplication.Services
                 throw new Exception("Account can't be deleted");
             }
             if (account.Balance != 0m) throw new Exception("Account balance is not 0");
+            // todo
         }
 
         public async Task<Account?> GetAccountAsync(int accountId)

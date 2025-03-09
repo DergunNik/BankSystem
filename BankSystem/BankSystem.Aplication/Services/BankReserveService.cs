@@ -1,6 +1,7 @@
 ﻿using BankSystem.Domain.Abstractions;
 using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using BankSystem.Domain.Entities;
+using BankSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -161,6 +162,28 @@ namespace BankSystem.Aplication.Services
             {
                 await _unitOfWork.RollbackTransactionAsync();
             }
+        }
+
+        public async Task<BankTransfer?> GetBankTransferAsync(int id)
+        {
+            return await _unitOfWork.GetRepository<BankTransfer>().GetByIdAsync(id);
+        }
+
+        public async Task<IReadOnlyList<BankTransfer>> GetUserBankTransfersAsync(int userId)
+        {
+            var userAccounts = await _unitOfWork.GetRepository<Account>()
+                    .ListAsync(a => a.OwnerType == AccountOwnerType.IndividualUser && a.OwnerId == userId);
+            List<BankTransfer> ret = [];
+            foreach (var account in userAccounts)
+            {
+                var accountTransfers = await _unitOfWork.GetRepository<BankTransfer>()
+                    .ListAsync(t => t.AccountId == account.Id);
+                foreach (var transfer in accountTransfers)
+                {
+                    ret.Add(transfer);
+                }
+            }
+            return ret.AsReadOnly();
         }
     }
 }

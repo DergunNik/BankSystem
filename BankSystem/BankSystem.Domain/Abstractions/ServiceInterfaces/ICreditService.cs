@@ -15,5 +15,6 @@ namespace BankSystem.Domain.Abstractions.ServiceInterfaces
         Task<Credit?> GetCreditAsync(int id);
         Task<IReadOnlyList<Credit>> GetCreditsByUserIdAsync(int userId);
         Task<IReadOnlyList<Credit>> GetCreditsByUserIdAsync(int userId, bool isPaid);
+        Task<IReadOnlyList<Credit>> GetCreditsOfBankAsync(int bankId);
     }
 }

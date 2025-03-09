@@ -14,5 +14,7 @@ namespace BankSystem.Domain.Abstractions.ServiceInterfaces
         Task TransferToAccountBankAsync(int accountId, decimal amount, Entity? entity = null);
         Task TransferFromAccountBankAsync(int accountId, decimal amount, Entity? entity = null);
         Task GetMoneyFromStateBankAsync(int bankReserveId, decimal amount);
+        Task<BankTransfer?> GetBankTransferAsync(int id);
+        Task<IReadOnlyList<BankTransfer>> GetUserBankTransfersAsync(int id);
     }
 }

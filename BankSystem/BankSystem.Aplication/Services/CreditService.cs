@@ -84,7 +84,13 @@ namespace BankSystem.Aplication.Services
         public async Task<IReadOnlyList<Credit>> GetCreditsByUserIdAsync(int userId, bool isPaid)
         {
             _logger.LogInformation($"GetCreditsByUserIdAsync {userId} {isPaid}");
-            return await _unitOfWork.GetRepository<Credit>().ListAsync(c => c.UserId == userId && c.IsPaid == isPaid);
+            return await _unitOfWork.GetRepository<Credit>().
+                ListAsync(c => c.UserId == userId && c.IsPaid == isPaid);
+        }
+
+        public async Task<IReadOnlyList<Credit>> GetCreditsOfBankAsync(int bankId)
+        {
+            return await _unitOfWork.GetRepository<Credit>().ListAsync(c => c.BankId == bankId);
         }
 
         public async Task HandleTodaysCreditPaymentsAsync()

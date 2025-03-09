@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using static BankSystem.WebAPI.Controllers.TransferController;
 
 namespace BankSystem.WebAPI.Controllers
 {
@@ -13,6 +14,7 @@ namespace BankSystem.WebAPI.Controllers
     {
         private readonly IUserService _userService;
         private readonly ITransferService _transferService;
+        private readonly IBankReserveService _bankReserveService;
         private readonly ILogger<TransferController> _logger;
 
         public class TransferDto
@@ -22,14 +24,22 @@ namespace BankSystem.WebAPI.Controllers
             public decimal Amount { get; set; }
         }
 
+        public class UserTransfers
+        {
+            public IReadOnlyList<Transfer> UsersTransfers { get; set; }
+            public IReadOnlyList<BankTransfer> BankTransfers { get; set; }
+        }
+
         public TransferController(
             IUserService userService,
             ITransferService transferService,
-            ILogger<TransferController> logger)
+            ILogger<TransferController> logger,
+            IBankReserveService bankReserveService)
         {
             _userService = userService;
             _transferService = transferService;
             _logger = logger;
+            _bankReserveService = bankReserveService;
         }
 
         [HttpPost]
@@ -119,12 +129,47 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
+        [HttpGet("of-user/{userId:int}")]
+        [Authorize(Roles = "Client")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Transfer>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<UserTransfers>> GetMyTransfersAsync(int userId)
+        {
+            try
+            {
+                _logger.LogInformation("HttpGet(\"my-transfers\")");
+
+                int adminId;
+                try { adminId = GetUserId(); }
+                catch (Exception) { return BadRequest("Invalid user ID."); }
+
+                var admin = await _userService.GetUserAsync(adminId);
+                if (admin is null) return BadRequest("Invalid user ID.");
+
+                var user = await _userService.GetUserAsync(userId);
+                if (user is null) return BadRequest("Invalid user ID.");
+
+                if (admin.BankId != user.BankId) return Conflict("other bank.");
+
+                var userTransfers = new UserTransfers();
+                userTransfers.UsersTransfers = await _transferService.GetUserTransfersAsync(userId);
+                userTransfers.BankTransfers = await _bankReserveService.GetUserBankTransfersAsync(userId);
+                return Ok(userTransfers);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error getting user transfers");
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        } 
+
         [HttpGet("my-transfers")]
         [Authorize(Roles = "Client")]
         [ProducesResponseType(typeof(IReadOnlyCollection<Transfer>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> GetMyTransfersAsync()
+        public async Task<ActionResult<UserTransfers>> GetMyTransfersAsync()
         {
             try
             {
@@ -134,8 +179,10 @@ namespace BankSystem.WebAPI.Controllers
                 try { userId = GetUserId(); }
                 catch (Exception) { return BadRequest("Invalid user ID."); }
 
-                var accounts = await _transferService.GetUserTransfersAsync(userId);
-                return Ok(accounts);
+                var userTransfers = new UserTransfers();
+                userTransfers.UsersTransfers = await _transferService.GetUserTransfersAsync(userId);
+                userTransfers.BankTransfers = await _bankReserveService.GetUserBankTransfersAsync(userId);
+                return Ok(userTransfers);
             }
             catch (Exception e)
             {
