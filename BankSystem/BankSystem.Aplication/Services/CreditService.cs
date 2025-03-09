@@ -87,6 +87,11 @@ namespace BankSystem.Aplication.Services
             return await _unitOfWork.GetRepository<Credit>().ListAsync(c => c.UserId == userId && c.IsPaid == isPaid);
         }
 
+        public async Task HandleTodaysCreditPaymentsAsync()
+        {
+            await Task.CompletedTask;
+        }
+
         private async Task<User> GetUserAsync(int id)
         {
             var user = await _unitOfWork.GetRepository<User>().GetByIdAsync(id);

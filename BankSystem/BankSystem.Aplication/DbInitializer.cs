@@ -1,6 +1,7 @@
 ﻿using BankSystem.Domain.Abstractions;
 using BankSystem.Domain.Entities;
 using BankSystem.Domain.Enums;
+using Isopoh.Cryptography.Argon2;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -88,7 +89,7 @@ namespace BankSystem.Application
                         BankId = id,
                         RequestDate = DateTime.UtcNow,
                         AnswerDate = DateTime.UtcNow.AddMinutes(1),
-                        PasswordHash = "password1"
+                        PasswordHash = Argon2.Hash("password1")
                     },
                     new User
                     {
@@ -103,7 +104,7 @@ namespace BankSystem.Application
                         BankId = id,
                         RequestDate = DateTime.UtcNow,
                         AnswerDate = DateTime.UtcNow.AddMinutes(1),
-                        PasswordHash = "password2"
+                        PasswordHash = Argon2.Hash("password2")
                     },
                     new User
                     {
@@ -118,7 +119,7 @@ namespace BankSystem.Application
                         BankId = id,
                         RequestDate = DateTime.UtcNow,
                         AnswerDate = DateTime.UtcNow.AddMinutes(1),
-                        PasswordHash = "password3"
+                        PasswordHash = Argon2.Hash("password3")
                     },
                     new User
                     {
@@ -133,7 +134,7 @@ namespace BankSystem.Application
                         BankId = id,
                         RequestDate = DateTime.UtcNow,
                         AnswerDate = DateTime.UtcNow.AddMinutes(1),
-                        PasswordHash = "password4"
+                        PasswordHash = Argon2.Hash("password4")
                     }
                 };
 
@@ -157,7 +158,7 @@ namespace BankSystem.Application
                         BankId = id,
                         RequestDate = DateTime.UtcNow,
                         AnswerDate = DateTime.UtcNow.AddMinutes(1),
-                        PasswordHash = "password"
+                        PasswordHash = Argon2.Hash("password")
                     };
 
                     users.Add(clientUser);
@@ -209,7 +210,9 @@ namespace BankSystem.Application
                     accounts.Add(enterpriseAccount);
                 }
             }
+            await unitOfWork.CommitTransactionAsync();
 
+            unitOfWork.BeginTransaction();
             foreach (var user in users)
             {
                 await unitOfWork.GetRepository<User>().AddAsync(user);

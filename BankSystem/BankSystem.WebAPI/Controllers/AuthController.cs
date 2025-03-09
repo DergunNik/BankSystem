@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BankSystem.WebAPI.Controllers
 {
     [ApiController]
-    [Route("api/authorization")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;

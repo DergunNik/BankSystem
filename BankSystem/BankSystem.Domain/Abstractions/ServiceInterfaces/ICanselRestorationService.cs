@@ -11,6 +11,6 @@ namespace BankSystem.Domain.Abstractions.ServiceInterfaces
     {
         Task RestoreCansellationAsync(int canselId);
         Task<Cansel?> GetCanselAsync(int id);
-        Task<IReadOnlyCollection<Cansel>> GetCanselsFromBankAsync(int bankId);
+        Task<IReadOnlyList<Cansel>> GetCanselsFromBankAsync(int bankId);
     }
 }

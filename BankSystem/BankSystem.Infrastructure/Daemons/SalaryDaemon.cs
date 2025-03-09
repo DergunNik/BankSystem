@@ -1,23 +1,23 @@
-﻿using BankSystem.Domain.Abstractions;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using BankSystem.Domain.Abstractions.ServiceInterfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BankSystem.Infrastructure.Daemons
 {
     public class SalaryDaemon : BackgroundService
     {
-        private readonly ISalaryService _salaryService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<SalaryDaemon> _logger;
-        
-        public SalaryDaemon(ISalaryService salaryService, ILogger<SalaryDaemon> logger)
+
+        public SalaryDaemon(
+            IServiceScopeFactory serviceScopeFactory,
+            ILogger<SalaryDaemon> logger)
         {
-            _salaryService = salaryService;
+            _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
         }
 
@@ -28,14 +28,17 @@ namespace BankSystem.Infrastructure.Daemons
                 var now = DateTime.UtcNow;
                 var nextRunTime = now.Date.AddDays(1).AddHours(2);
                 var delay = nextRunTime - now;
-                _logger.LogInformation($"SalaryDaemon at {nextRunTime.ToString()} UTC (after {delay.TotalHours:F2} hours)");
+                _logger.LogInformation($"SalaryDaemon at {nextRunTime} UTC (after {delay.TotalHours:F2} hours)");
 
                 await Task.Delay(delay, stoppingToken);
 
                 if (!stoppingToken.IsCancellationRequested)
                 {
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var salaryService = scope.ServiceProvider.GetRequiredService<ISalaryService>();
+
                     _logger.LogInformation($"SalaryDaemon: {DateTime.UtcNow}");
-                    await _salaryService.HandleTodaysSalariesAsync();
+                    await salaryService.HandleTodaysSalariesAsync();
                 }
             }
         }

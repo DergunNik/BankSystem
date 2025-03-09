@@ -1,5 +1,5 @@
 ﻿using BankSystem.Domain.Entities;
-using BankSystem.Infrastructure.Repositories;
+using BankSystem.Infrastructure.Persistence.Repositories;
 using BankSystem.Domain.Abstractions;
 using Dapper;
 using System;
@@ -40,6 +40,7 @@ namespace BankSystem.Infrastructure.Persistence.UnitOfWork
             {
                 try
                 {
+                    await _context.SaveChangesAsync();
                     await _currentTransaction.CommitAsync();
                 }
                 catch (Exception)

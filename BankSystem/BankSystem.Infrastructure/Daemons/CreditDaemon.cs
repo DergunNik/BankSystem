@@ -1,4 +1,6 @@
 ﻿using BankSystem.Domain.Abstractions.ServiceInterfaces;
+using BankSystem.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,12 +13,12 @@ namespace BankSystem.Infrastructure.Daemons
 {
     public class CreditDaemon : BackgroundService
     {
-        private readonly ICreditService _creditService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<CreditDaemon> _logger;
 
-        public CreditDaemon(ICreditService creditService, ILogger<CreditDaemon> logger)
+        public CreditDaemon(IServiceScopeFactory serviceScopeFactory, ILogger<CreditDaemon> logger)
         {
-            _creditService = creditService;
+            _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
         }
 
@@ -33,8 +35,10 @@ namespace BankSystem.Infrastructure.Daemons
 
                 if (!stoppingToken.IsCancellationRequested)
                 {
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var creditService = scope.ServiceProvider.GetRequiredService<ICreditService>();
                     _logger.LogInformation($"CreditDaemon: {DateTime.UtcNow}");
-                    // TODO Logic;
+                    await creditService.HandleTodaysCreditPaymentsAsync();
                 }
             }
         }

@@ -14,10 +14,20 @@ namespace BankSystem.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+            var rawConnectionString = configuration.GetSection("DbConnectionSettings")["SqliteConnection"];
+            var resolvedConnectionString = string.Format(rawConnectionString, AppContext.BaseDirectory);
+            var cleanedPath = resolvedConnectionString.Replace("Data Source = ", "").Trim();
+            var targetDirectory = Path.GetDirectoryName(cleanedPath);
+            if (!string.IsNullOrWhiteSpace(targetDirectory))
+            {
+                Directory.CreateDirectory(targetDirectory);
+            }
+
             services.Configure<DbConnectionSettings>(configuration.GetSection("DbConnectionSettings"))
                     .AddScoped<IUnitOfWork, EfUnitOfWork>()
                     .AddScoped<AppDbContext>()
-                    .AddHostedService<SalaryDaemon>();
+                    .AddHostedService<SalaryDaemon>()
+                    .AddHostedService<CreditDaemon>();
             return services;
         }
     }

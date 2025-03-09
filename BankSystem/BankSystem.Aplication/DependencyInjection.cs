@@ -14,14 +14,17 @@ namespace BankSystem.Aplication
                     .AddScoped<IAccountService, AccountService>()
                     .AddScoped<IAuthService, AuthService>()
                     .AddScoped<IBankReserveService, BankReserveService>()
+                    .AddScoped<IBankService, BankService>()
                     .AddScoped<ICanselRestorationService, CanselRestorationService>()
                     .AddScoped<ICreditCansellationService, CreditCansellationService>()
                     .AddScoped<ICreditService, CreditService>()
+                    .AddScoped<IEnterpriseService, EnterpriseService>()
                     .AddScoped<IJwtService, JwtService>()
                     .AddScoped<IRequestService, RequestService>()
                     .AddScoped<ISalaryService, SalaryService>()
                     .AddScoped<ITransferCansellationService, TransferCansellationService>()
-                    .AddScoped<ITransferService, TransferService>();
+                    .AddScoped<ITransferService, TransferService>()
+                    .AddScoped<IUserService, UserService>();
             return services;
         }
     }

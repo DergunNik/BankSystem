@@ -20,6 +20,7 @@ namespace BankSystem.Infrastructure.Persistence.Data
         public DbSet<Cansel> Cansels { get; set; } = null!;
         public DbSet<Credit> Credits { get; set; } = null!;
         public DbSet<Enterprise> Enterprises { get; set; } = null!;
+        public DbSet<ExternalSpecialist> ExternalSpecialists { get; set; } = null!;
         public DbSet<Request> Requests { get; set; } = null!;
         public DbSet<Salary> Salaries { get; set; } = null!;
         public DbSet<SalaryProject> SalaryProjects { get; set; } = null!;

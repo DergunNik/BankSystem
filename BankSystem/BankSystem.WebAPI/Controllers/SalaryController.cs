@@ -251,7 +251,7 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpDelete("remove/{id:int}")]
+        [HttpDelete("{id:int}")]
         [Authorize(Roles = "Client,ExternalSpecialist,Operator,Manager,Administrator")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -261,7 +261,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation($"HttpDelete(\"remove/{id}\")");
+                _logger.LogInformation($"HttpDelete(\"{id}\")");
 
                 int userId;
                 try { userId = GetUserId(); }
@@ -297,12 +297,12 @@ namespace BankSystem.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"HttpDelete(\"remove/{id}\")");
+                _logger.LogError(e, $"HttpDelete(\"{id}\")");
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
 
-        [HttpDelete("remove/of-enterprise/{enterpriseId:int}")]
+        [HttpDelete("of-enterprise/{enterpriseId:int}")]
         [Authorize(Roles = "ExternalSpecialist,Operator,Manager,Administrator")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -312,7 +312,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation($"HttpDelete(\"remove/of-enterprise/{enterpriseId}\")");
+                _logger.LogInformation($"HttpDelete(\"of-enterprise/{enterpriseId}\")");
 
                 int userId;
                 try { userId = GetUserId(); }
@@ -337,7 +337,7 @@ namespace BankSystem.WebAPI.Controllers
                     }
                     catch (Exception inner_e)
                     {
-                        _logger.LogError(inner_e, $"HttpDelete(\"remove/of-enterprise/{enterpriseId}\") {salary.Id}");
+                        _logger.LogError(inner_e, $"HttpDelete(\"of-enterprise/{enterpriseId}\") {salary.Id}");
                     }
                 }
                 return NoContent();

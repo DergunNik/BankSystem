@@ -6,7 +6,7 @@ namespace BankSystem.WebAPI.Controllers
 {
     public abstract class ExtendedControllerBase : ControllerBase
     {
-        public int GetUserId()
+        protected int GetUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
