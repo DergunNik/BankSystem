@@ -70,6 +70,11 @@ namespace BankSystem.Aplication.Services
             }
         }
 
+        public async Task<Credit?> GetCreditAsync(int id)
+        {
+            return await _unitOfWork.GetRepository<Credit>().GetByIdAsync(id);
+        }
+
         public async Task<IReadOnlyList<Credit>> GetCreditsByUserIdAsync(int userId)
         {
             _logger.LogInformation($"GetCreditsByUserIdAsync {userId}");

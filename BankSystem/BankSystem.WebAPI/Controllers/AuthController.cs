@@ -26,6 +26,8 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         [HttpPost("register")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(string))]
         public async Task<ActionResult> RegisterAsync([FromBody] User user)
         {
             try
@@ -42,6 +44,8 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
         public async Task<ActionResult> LoginAsync(
             [FromBody] LoginRequestDto args)
         {

@@ -1,5 +1,4 @@
-﻿using BankSystem.Aplication.Services;
-using BankSystem.Domain.Abstractions.ServiceInterfaces;
+﻿using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using BankSystem.Domain.Entities;
 using BankSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -25,7 +24,7 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         public RequestController(
-            IRequestService requestService, 
+            IRequestService requestService,
             IUserService userService,
             ILogger<RequestController> logger,
             IEnterpriseService enterpriseService,
@@ -40,6 +39,10 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpGet("salary-projects")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Request>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IReadOnlyCollection<Request>>>
             GetSalaryProjectRequestsAsync()
         {
@@ -58,7 +61,7 @@ namespace BankSystem.WebAPI.Controllers
 
                 if (requests == null || !requests.Any())
                 {
-                    return NoContent(); 
+                    return NoContent();
                 }
 
                 return Ok(requests);
@@ -72,12 +75,16 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpGet("salaries")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Request>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IReadOnlyCollection<Request>>>
             GetSalaryRequestsAsync()
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"salary-projects\")");
+                _logger.LogInformation($"HttpGet(\"salaries\")");
 
                 int userId;
                 try { userId = GetUserId(); }
@@ -97,13 +104,17 @@ namespace BankSystem.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error fetching salary project requests");
+                _logger.LogError(e, "Error fetching salary requests");
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
 
         [HttpGet("users")]
         [Authorize(Roles = "Manager,Administrator")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Request>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IReadOnlyCollection<Request>>>
             GetUserRequestsAsync()
         {
@@ -136,6 +147,10 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpGet("credits")]
         [Authorize(Roles = "Manager,Administrator")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Request>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IReadOnlyCollection<Request>>>
             GetCreditRequestsAsync()
         {
@@ -168,6 +183,10 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpPost("salary-projects")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult>
             AnswerSalaryProjectRequestAsync([FromBody] RequestAnswerDto answer)
         {
@@ -183,7 +202,7 @@ namespace BankSystem.WebAPI.Controllers
                 if (user is null) return BadRequest("Invalid user ID.");
 
                 var request = await _requestService.GetRequestByIdAsync(answer.RequestId);
-                
+
                 if (request is null) return NoContent();
                 if (request.IsChecked) return Conflict("Request has already been processed.");
                 if (request.RequestType != RequestType.SalaryProject) return BadRequest();
@@ -209,6 +228,10 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpPost("salaries")]
         [Authorize(Roles = "ExternalSpecialist,Operator,Manager,Administrator")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult>
             AnswerSalaryRequestAsync([FromBody] RequestAnswerDto answer)
         {
@@ -264,6 +287,10 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpPost("users-or-credits")]
         [Authorize(Roles = "Manager,Administrator")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult>
             AnswerUserOrCreditRequestAsync([FromBody] RequestAnswerDto answer)
         {

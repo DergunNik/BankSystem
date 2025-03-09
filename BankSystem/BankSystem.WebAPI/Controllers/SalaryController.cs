@@ -1,5 +1,4 @@
-﻿using BankSystem.Aplication.Services;
-using BankSystem.Domain.Abstractions.ServiceInterfaces;
+﻿using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using BankSystem.Domain.Entities;
 using BankSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -29,20 +28,27 @@ namespace BankSystem.WebAPI.Controllers
 
         public SalaryController(
             IUserService userService,
-            ISalaryService salaryService, 
-            ILogger<SalaryController> logger, 
+            ISalaryService salaryService,
+            ILogger<SalaryController> logger,
             IRequestService requestService,
-            IAccountService accountService)
+            IAccountService accountService,
+            IEnterpriseService enterpriseService)
         {
             _userService = userService;
             _salaryService = salaryService;
             _logger = logger;
             _requestService = requestService;
             _accountService = accountService;
+            _enterpriseService = enterpriseService;
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
+        [ProducesResponseType(typeof(Salary), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Salary>> GetSalaryAsync(int id)
         {
             try
@@ -68,9 +74,12 @@ namespace BankSystem.WebAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
-  
+
         [HttpGet("from-bank")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Salary>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IReadOnlyCollection<Salary>>> GetSalariesFromBankAsync()
         {
             try
@@ -94,8 +103,12 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("of-enterprise/{enterpriseId}")]
+        [HttpGet("of-enterprise/{enterpriseId:int}")]
         [Authorize(Roles = "ExternalSpecialist,Operator,Manager,Administrator")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Salary>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IReadOnlyCollection<Salary>>> GetSalariesOfEnterpriseAsync(int enterpriseId)
         {
             try
@@ -131,8 +144,12 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("of-user/{userId}")]
+        [HttpGet("of-user/{userId:int}")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Salary>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IReadOnlyCollection<Salary>>> GetSalariesOfUserAsync(int userId)
         {
             try
@@ -150,7 +167,7 @@ namespace BankSystem.WebAPI.Controllers
                 if (user is null) return BadRequest("Invalid user ID.");
 
                 if (admin.BankId != user.BankId) return Conflict("Other bank");
-                    
+
                 var accounts = await _salaryService.GetUserSalariesAsync(userId);
                 return Ok(accounts);
             }
@@ -163,6 +180,9 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpGet("my-salaries")]
         [Authorize(Roles = "Client")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Salary>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IReadOnlyCollection<Salary>>> GetMySalariesAsync()
         {
             try
@@ -184,6 +204,10 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Client")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> AddSalaryAsync([FromBody] SalaryDto salaryDto)
         {
             try
@@ -207,7 +231,7 @@ namespace BankSystem.WebAPI.Controllers
                 if (user is null) return BadRequest("Invalid user ID.");
 
                 if (account.OwnerId != userId) return BadRequest();
-                if (project.BankId != user.BankId 
+                if (project.BankId != user.BankId
                     || account.BankId != user.BankId) return Conflict("Other bank");
 
                 var salary = new Salary
@@ -227,8 +251,12 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpDelete("remove/{id}")]
+        [HttpDelete("remove/{id:int}")]
         [Authorize(Roles = "Client,ExternalSpecialist,Operator,Manager,Administrator")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> RemoveSalaryAsync(int id)
         {
             try
@@ -274,8 +302,12 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpDelete("remove/of-enterprise/{enterpriseId}")]
+        [HttpDelete("remove/of-enterprise/{enterpriseId:int}")]
         [Authorize(Roles = "ExternalSpecialist,Operator,Manager,Administrator")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> RemoveEnterpriseSalariesAsync(int enterpriseId)
         {
             try
@@ -318,4 +350,3 @@ namespace BankSystem.WebAPI.Controllers
         }
     }
 }
- 

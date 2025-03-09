@@ -86,5 +86,16 @@ namespace BankSystem.Aplication.Services
                 await _unitOfWork.RollbackTransactionAsync();
             }
         }
+
+        public async Task<Cansel?> GetCanselAsync(int id)
+        {
+            return await _unitOfWork.GetRepository<Cansel>().GetByIdAsync(id);
+        }
+
+        public async Task<IReadOnlyList<Cansel>> GetCanselsFromBankAsync(int bankId)
+        {
+            return (await _unitOfWork.GetRepository<Cansel>().ListAsync(c => c.BankId == bankId))
+                .ToList().AsReadOnly();
+        }
     }
 }

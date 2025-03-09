@@ -25,8 +25,8 @@ namespace BankSystem.WebAPI.Controllers
         }
 
         public AccountController(
-            IRequestService requestService, 
-            ILogger<AccountController> logger, 
+            IRequestService requestService,
+            ILogger<AccountController> logger,
             IUserService userService,
             IAccountService accountService)
         {
@@ -38,12 +38,16 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Client")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> AddAccountAsync([FromBody] AccountDto accountDto)
         {
             try
             {
                 _logger.LogInformation("HttpPost");
-                if (accountDto.IsSavingAccount && (accountDto.MonthlyInterestRate < 0 
+                if (accountDto.IsSavingAccount && (accountDto.MonthlyInterestRate < 0
                     || accountDto.SavingsAccountUntil < DateTime.UtcNow))
                 {
                     return Conflict("Bad args.");
@@ -70,7 +74,7 @@ namespace BankSystem.WebAPI.Controllers
                 };
 
                 await _requestService.CreateRequestAsync(user);
-                
+
                 return NoContent();
             }
             catch (Exception e)
@@ -80,13 +84,17 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("{accountId}")]
+        [HttpGet("{accountId:int}")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
-        public async Task<ActionResult> GetAccountAsync(int accountId)
+        [ProducesResponseType(typeof(Account), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<Account>> GetAccountAsync(int accountId)
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"{accountId}\"");
+                _logger.LogInformation($"HttpGet(\"{accountId}\")");
 
                 int userId;
                 try { userId = GetUserId(); }
@@ -118,11 +126,14 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpGet("from-bank")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
-        public async Task<ActionResult> GetAccountsAsync()
+        [ProducesResponseType(typeof(List<Account>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<Account>>> GetAccountsAsync()
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"from-bank\")");
+                _logger.LogInformation("HttpGet(\"from-bank\")");
 
                 int userId;
                 try { userId = GetUserId(); }
@@ -143,7 +154,10 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpGet("my-accounts")]
         [Authorize(Roles = "Client")]
-        public async Task<ActionResult> GetMyAccountsAsync()
+        [ProducesResponseType(typeof(List<Account>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<Account>>> GetMyAccountsAsync()
         {
             try
             {

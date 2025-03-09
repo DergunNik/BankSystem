@@ -1,5 +1,4 @@
-﻿using BankSystem.Aplication.Services;
-using BankSystem.Domain.Abstractions.ServiceInterfaces;
+﻿using BankSystem.Domain.Abstractions.ServiceInterfaces;
 using BankSystem.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -35,6 +34,9 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Client")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult>
             TransferAsync([FromBody] TransferDto transferDto)
         {
@@ -49,13 +51,16 @@ namespace BankSystem.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error transfering");
+                _logger.LogError(e, "Error transferring");
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
 
         [HttpGet("from-bank")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Transfer>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IReadOnlyCollection<Transfer>>>
             GetTransfersFromBankAsync()
         {
@@ -81,6 +86,11 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpGet("{transferId}")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
+        [ProducesResponseType(typeof(Transfer), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Transfer>>
             GetTransferAsync(int transferId)
         {
@@ -111,6 +121,9 @@ namespace BankSystem.WebAPI.Controllers
 
         [HttpGet("my-transfers")]
         [Authorize(Roles = "Client")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<Transfer>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> GetMyTransfersAsync()
         {
             try
