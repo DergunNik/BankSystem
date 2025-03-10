@@ -1,12 +1,12 @@
-﻿using BankSystem.Domain.Entities;
-using BankSystem.Domain.Enums;
+﻿using BankSystem.BankClient.Models;
+using BankSystem.BankClient.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Domain.Abstractions.ServiceInterfaces
+namespace BankSystem.BankClient.Abstractions.ServiceInterfaces
 {
     public interface IRequestService
     {

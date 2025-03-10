@@ -1,5 +1,5 @@
-﻿using BankSystem.Domain.Abstractions.ServiceInterfaces;
-using BankSystem.Domain.Entities;
+﻿using BankSystem.BankClient.Abstractions.ServiceInterfaces;
+using BankSystem.BankClient.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

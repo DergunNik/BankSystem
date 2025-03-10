@@ -1,7 +1,7 @@
-﻿using BankSystem.Domain.Abstractions;
-using BankSystem.Domain.Abstractions.ServiceInterfaces;
-using BankSystem.Domain.Entities;
-using BankSystem.Domain.Enums;
+﻿using BankSystem.BankClient.Abstractions;
+using BankSystem.BankClient.Abstractions.ServiceInterfaces;
+using BankSystem.BankClient.Models;
+using BankSystem.BankClient.Enums;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -43,51 +43,49 @@ namespace BankSystem.Aplication.Services
             try
             {
                 _unitOfWork.BeginTransaction();
-                var (repositoryType, typedRepository) = GetRepository(requestTarget);
 
                 var request = new Request()
                 {
                     RequestEntityId = requestTarget.Id,
-                    IsChecked = false
+                    IsChecked = false,
+                    BankId = requestTarget.BankId
                 };
 
-                if (requestTarget is Credit)
+                switch (requestTarget)
                 {
-                    request.RequestType = RequestType.Credit;
-                } else if (requestTarget is User)
-                {
-                    request.RequestType = RequestType.User;
-                }
-                else if (requestTarget is SalaryProject)
-                {
-                    request.RequestType = RequestType.SalaryProject;
-                } 
-                else if (requestTarget is Salary)
-                {
-                    request.RequestType = RequestType.Salary;
-                }
-                else
-                {
-                    throw new Exception("Invalid type");
+                    case Credit credit:
+                        request.RequestType = RequestType.Credit;
+                        await _unitOfWork.GetRepository<Credit>().AddAsync(credit);
+                        break;
+                    case User user:
+                        request.RequestType = RequestType.User;
+                        await _unitOfWork.GetRepository<User>().AddAsync(user);
+                        break;
+                    case SalaryProject project:
+                        request.RequestType = RequestType.SalaryProject;
+                        await _unitOfWork.GetRepository<SalaryProject>().AddAsync(project);
+                        break;
+                    case Salary salary:
+                        request.RequestType = RequestType.Salary;
+                        await _unitOfWork.GetRepository<Salary>().AddAsync(salary);
+                        break;
+                    default:
+                        throw new Exception("Invalid type");
                 }
 
-                var addMethod = repositoryType.GetMethod("AddAsync");
-                if (addMethod != null)
-                {
-                    requestTarget.RequestDate = DateTime.UtcNow;
-                    requestTarget.AnswerDate = requestTarget.RequestDate.AddMinutes(-1);
-                    await (Task)addMethod.Invoke(typedRepository, new object[] { requestTarget });
-                }
+                requestTarget.RequestDate = DateTime.UtcNow;
+                requestTarget.AnswerDate = DateTime.UtcNow.AddMinutes(-1);
 
                 await _unitOfWork.GetRepository<Request>().AddAsync(request);
 
                 await _unitOfWork.CommitTransactionAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error creating request");
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
-            }   
+            }
         }
 
         public async Task<IReadOnlyCollection<Request>> GetRequestsAsync(RequestType requestType, int bankId)
@@ -225,18 +223,6 @@ namespace BankSystem.Aplication.Services
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
-        }
-
-        private (Type, dynamic?) GetRepository(IRequestable requestTarget)
-        {
-            Type targetType = requestTarget.GetType();
-            var repositoryType = typeof(IRepository<>).MakeGenericType(targetType);
-            var repository = _unitOfWork.GetType()
-                .GetMethod("GetRepository")
-                .MakeGenericMethod(targetType)
-                .Invoke(_unitOfWork, null);
-            dynamic typedRepository = Convert.ChangeType(repository, repositoryType);
-            return (repositoryType, typedRepository);
         }
     }
 }

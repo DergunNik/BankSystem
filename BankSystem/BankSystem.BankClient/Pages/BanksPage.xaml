@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BankSystem.BankClient.ViewModels"
+             x:Class="BankSystem.BankClient.Pages.BanksPage"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Name="BanksView"
+             Title="Banks">
+
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior 
+            EventName="Appearing"
+            BindingContext="{Binding Source={x:Reference BanksView}, Path=BindingContext}"
+            Command="{Binding Path=LoadBanksCommand}"/>
+    </ContentPage.Behaviors>
+
+    <ContentPage.Content>
+        <StackLayout Margin="20">
+            <CollectionView ItemsSource="{Binding Banks}" IsVisible="{Binding IsBanksLoaded}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <StackLayout Padding="10">
+                            <Label Text="{Binding LegalName}" FontSize="20" />
+                            <Button Text="Select" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BanksViewModel}}, Path=SelectBankCommand}" CommandParameter="{Binding .}" />
+                        </StackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Button Text="Retry" Command="{Binding LoadBanksCommand}" IsVisible="{Binding IsBanksLoadFailed}" />
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

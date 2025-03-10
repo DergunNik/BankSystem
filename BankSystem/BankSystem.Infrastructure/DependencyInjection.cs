@@ -1,4 +1,4 @@
-﻿using BankSystem.Domain.Abstractions;
+﻿using BankSystem.BankClient.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;

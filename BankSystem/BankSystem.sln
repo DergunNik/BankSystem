@@ -7,11 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.Domain", "BankSy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.Aplication", "BankSystem.Aplication\BankSystem.Aplication.csproj", "{A7E5BCCA-2AD8-4D47-BE05-A16697291919}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.UI", "BankSystem.UI\BankSystem.UI.csproj", "{60BC0394-B003-4563-8A78-D759BD7B55E1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.WebAPI", "BankSystem.WebAPI\BankSystem.WebAPI.csproj", "{3976D44A-76CE-4AC7-BA12-04275E5B3714}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.Infrastructure", "BankSystem.Infrastructure\BankSystem.Infrastructure.csproj", "{90486906-E252-940A-7C7A-5E86AEFB8D91}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.BankClient", "BankSystem.BankClient\BankSystem.BankClient.csproj", "{1E52FEC6-AD56-4629-A07D-DB89DEE4D1EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,10 +27,6 @@ Global
 		{A7E5BCCA-2AD8-4D47-BE05-A16697291919}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7E5BCCA-2AD8-4D47-BE05-A16697291919}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7E5BCCA-2AD8-4D47-BE05-A16697291919}.Release|Any CPU.Build.0 = Release|Any CPU
-		{60BC0394-B003-4563-8A78-D759BD7B55E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{60BC0394-B003-4563-8A78-D759BD7B55E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{60BC0394-B003-4563-8A78-D759BD7B55E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{60BC0394-B003-4563-8A78-D759BD7B55E1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3976D44A-76CE-4AC7-BA12-04275E5B3714}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3976D44A-76CE-4AC7-BA12-04275E5B3714}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3976D44A-76CE-4AC7-BA12-04275E5B3714}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +35,11 @@ Global
 		{90486906-E252-940A-7C7A-5E86AEFB8D91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90486906-E252-940A-7C7A-5E86AEFB8D91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90486906-E252-940A-7C7A-5E86AEFB8D91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E52FEC6-AD56-4629-A07D-DB89DEE4D1EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E52FEC6-AD56-4629-A07D-DB89DEE4D1EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E52FEC6-AD56-4629-A07D-DB89DEE4D1EA}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{1E52FEC6-AD56-4629-A07D-DB89DEE4D1EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E52FEC6-AD56-4629-A07D-DB89DEE4D1EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

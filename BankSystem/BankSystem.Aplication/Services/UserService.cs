@@ -1,6 +1,6 @@
-﻿using BankSystem.Domain.Abstractions;
-using BankSystem.Domain.Abstractions.ServiceInterfaces;
-using BankSystem.Domain.Entities;
+﻿using BankSystem.BankClient.Abstractions;
+using BankSystem.BankClient.Abstractions.ServiceInterfaces;
+using BankSystem.BankClient.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

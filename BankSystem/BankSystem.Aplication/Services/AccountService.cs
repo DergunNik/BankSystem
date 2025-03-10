@@ -1,7 +1,7 @@
-﻿using BankSystem.Domain.Abstractions;
-using BankSystem.Domain.Abstractions.ServiceInterfaces;
-using BankSystem.Domain.Entities;
-using BankSystem.Domain.Enums;
+﻿using BankSystem.BankClient.Abstractions;
+using BankSystem.BankClient.Abstractions.ServiceInterfaces;
+using BankSystem.BankClient.Models;
+using BankSystem.BankClient.Enums;
 using Microsoft.Extensions.Logging;
 using Serilog.Core;
 using System;

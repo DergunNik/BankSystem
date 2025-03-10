@@ -1,6 +1,6 @@
-﻿using BankSystem.Domain.Abstractions.ServiceInterfaces;
-using BankSystem.Domain.Entities;
-using BankSystem.Domain.Enums;
+﻿using BankSystem.BankClient.Abstractions.ServiceInterfaces;
+using BankSystem.BankClient.Models;
+using BankSystem.BankClient.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection.Metadata.Ecma335;

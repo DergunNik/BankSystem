@@ -3,30 +3,19 @@ using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System;
 using CommunityToolkit.Maui;
-using Microsoft.Extensions.Logging;
-using CommunityToolkit.Maui;
-using Microsoft.Extensions.Configuration;
-using System.Reflection;
+using BankSystem.BankClient.Services;
+using BankSystem.BankClient.Pages;
+using BankSystem.BankClient.ViewModels;
 
 
 
-namespace BankSystem.UI;
+namespace BankSystem.BankClient;
 
 public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder();
-
-        // remove from here
-        string settingsStream = "BankSystem.UI.appsettings.json";
-        var a = Assembly.GetExecutingAssembly();
-        using var stream = a.GetManifestResourceStream(settingsStream);
-        builder.Configuration.AddJsonStream(stream);
-        var connStr = builder.Configuration
-                .GetConnectionString("SqliteConnection");
-        string dataDirectory = FileSystem.Current.AppDataDirectory + "/";
-        connStr = String.Format(connStr, dataDirectory);
 
         builder
             .UseMauiApp<App>()
@@ -37,7 +26,21 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
 
-        
+        builder.Services.AddSingleton<HttpClient>(sp =>
+        {
+            var client = new HttpClient
+            {
+                BaseAddress = new Uri("http://localhost:5187")
+            };
+            return client;
+        })              
+                        .AddSingleton<IAuthService, AuthService>()
+                        .AddSingleton<IBankService, BankService>() 
+                        .AddTransient<StartPage>()
+                        .AddTransient<BanksViewModel>()
+                        .AddTransient<AuthPage>()
+                        .AddTransient<AuthViewModel>();
+
 
 #if DEBUG
         builder.Logging.AddDebug();

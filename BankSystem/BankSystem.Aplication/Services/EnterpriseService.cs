@@ -1,7 +1,7 @@
-﻿using BankSystem.Domain.Abstractions;
-using BankSystem.Domain.Abstractions.ServiceInterfaces;
-using BankSystem.Domain.Entities;
-using BankSystem.Domain.Enums;
+﻿using BankSystem.BankClient.Abstractions;
+using BankSystem.BankClient.Abstractions.ServiceInterfaces;
+using BankSystem.BankClient.Models;
+using BankSystem.BankClient.Enums;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -96,6 +96,13 @@ namespace BankSystem.Aplication.Services
         public async Task<Enterprise?> GetEnterpriseAsync(int enterpriseId)
         {
             return await _unitOfWork.GetRepository<Enterprise>().GetByIdAsync(enterpriseId);
+        }
+        
+        public async Task<IReadOnlyList<Enterprise>> GetBankEnterprisesAsync(int bankId)
+        {
+            return await _unitOfWork.GetRepository<Enterprise>()
+                .ListAsync(e => e.BankId == bankId);
+
         }
     }
 }

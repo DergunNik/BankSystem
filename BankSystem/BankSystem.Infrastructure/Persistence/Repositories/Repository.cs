@@ -1,5 +1,5 @@
-﻿using BankSystem.Domain.Entities;
-using BankSystem.Domain.Abstractions;
+﻿using BankSystem.BankClient.Models;
+using BankSystem.BankClient.Abstractions;
 using Dapper;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿using BankSystem.Domain.Entities;
+﻿using BankSystem.BankClient.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Domain.Abstractions
+namespace BankSystem.BankClient.Abstractions
 {
     public interface IRepository<T> where T : Entity
     {

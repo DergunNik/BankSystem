@@ -1,4 +1,4 @@
-﻿using BankSystem.Domain.Entities;
+﻿using BankSystem.BankClient.Models;
 using BankSystem.Infrastructure.Persistence.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

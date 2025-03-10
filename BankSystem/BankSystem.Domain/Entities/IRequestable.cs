@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Domain.Entities
+namespace BankSystem.BankClient.Models
 {
     public interface IRequestable
     {
@@ -12,5 +12,6 @@ namespace BankSystem.Domain.Entities
         bool IsApproved { get; set; }
         DateTime RequestDate { get; set; }
         DateTime AnswerDate { get; set; }
+        int BankId { get; set; }
     }
 }

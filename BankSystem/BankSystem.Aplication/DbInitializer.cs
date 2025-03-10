@@ -1,6 +1,6 @@
-﻿using BankSystem.Domain.Abstractions;
-using BankSystem.Domain.Entities;
-using BankSystem.Domain.Enums;
+﻿using BankSystem.BankClient.Abstractions;
+using BankSystem.BankClient.Models;
+using BankSystem.BankClient.Enums;
 using Isopoh.Cryptography.Argon2;
 using Microsoft.Extensions.DependencyInjection;
 using System;

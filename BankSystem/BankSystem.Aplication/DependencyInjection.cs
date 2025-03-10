@@ -1,6 +1,6 @@
 ﻿using BankSystem.Aplication.Services;
 using BankSystem.Aplication.Settings;
-using BankSystem.Domain.Abstractions.ServiceInterfaces;
+using BankSystem.BankClient.Abstractions.ServiceInterfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

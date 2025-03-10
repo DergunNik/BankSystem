@@ -1,6 +1,6 @@
-﻿using BankSystem.Domain.Entities;
-using BankSystem.Domain.Enums;
-using BankSystem.Domain.Abstractions;
+﻿using BankSystem.BankClient.Models;
+using BankSystem.BankClient.Enums;
+using BankSystem.BankClient.Abstractions;
 using Isopoh.Cryptography.Argon2;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
-using BankSystem.Domain.Abstractions.ServiceInterfaces;
+using BankSystem.BankClient.Abstractions.ServiceInterfaces;
 
 namespace BankSystem.Aplication.Services
 {
@@ -87,7 +87,7 @@ namespace BankSystem.Aplication.Services
                 }
             }
 
-            if (isEmailUsed)
+            if (!isEmailUsed)
             {
                 user.PasswordHash = Argon2.Hash(user.PasswordHash);
                 await _requestService.CreateRequestAsync(user);

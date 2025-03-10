@@ -1,6 +1,6 @@
-﻿using BankSystem.Domain.Abstractions;
-using BankSystem.Domain.Abstractions.ServiceInterfaces;
-using BankSystem.Domain.Entities;
+﻿using BankSystem.BankClient.Abstractions;
+using BankSystem.BankClient.Abstractions.ServiceInterfaces;
+using BankSystem.BankClient.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -56,6 +56,16 @@ namespace BankSystem.Aplication.Services
             _logger.LogInformation($"DoesBankWithIdExistAsync {id}");
             var b = await _unitOfWork.GetRepository<Bank>().GetByIdAsync(id);
             return b is not null;
+        }
+
+        public async Task<Bank?> GetBankByIdAsync(int id)
+        {
+            return await _unitOfWork.GetRepository<Bank>().GetByIdAsync(id);
+        }
+
+        public async Task<IReadOnlyList<Bank>> GetAllBanksAsync()
+        {
+            return await _unitOfWork.GetRepository<Bank>().ListAllAsync();
         }
     }
 }
