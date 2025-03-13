@@ -1,6 +1,5 @@
 using BankSystem.Application;
 using BankSystem.Application.Settings;
-using BankSystem.Application;
 using BankSystem.Infrastructure;
 using BankSystem.Infrastructure.Middlewares;
 using Microsoft.OpenApi.Models;
