@@ -285,18 +285,33 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpPost("users-or-credits")]
+        [HttpPost("users")]
         [Authorize(Roles = "Manager,Administrator")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult>
-            AnswerUserOrCreditRequestAsync([FromBody] RequestAnswerDto answer)
+        public async Task<ActionResult> AnswerUserRequestAsync([FromBody] RequestAnswerDto answer)
+        {
+            return await ProcessRequestAsync(answer, RequestType.User);
+        }
+
+        [HttpPost("credits")]
+        [Authorize(Roles = "Manager,Administrator")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> AnswerCreditRequestAsync([FromBody] RequestAnswerDto answer)
+        {
+            return await ProcessRequestAsync(answer, RequestType.Credit);
+        }
+
+        private async Task<ActionResult> ProcessRequestAsync(RequestAnswerDto answer, RequestType expectedType)
         {
             try
             {
-                _logger.LogInformation($"HttpPost(\"users-or-credits\") {answer.RequestId} {answer.IsApproved}");
+                _logger.LogInformation($"Processing {expectedType} request: {answer.RequestId} Approval: {answer.IsApproved}");
 
                 int userId;
                 try { userId = GetUserId(); }
@@ -309,12 +324,8 @@ namespace BankSystem.WebAPI.Controllers
 
                 if (request is null) return NoContent();
                 if (request.IsChecked) return Conflict("Request has already been processed.");
-                if (request.RequestType != RequestType.User
-                    && request.RequestType != RequestType.Credit)
-                {
-                    return BadRequest();
-                }
-                if (request.BankId != user.BankId) return Conflict("Request is from other bank");
+                if (request.RequestType != expectedType) return BadRequest($"Expected {expectedType} request.");
+                if (request.BankId != user.BankId) return Conflict("Request is from another bank.");
 
                 if (answer.IsApproved)
                 {
@@ -329,7 +340,7 @@ namespace BankSystem.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error answering user or credit request");
+                _logger.LogError(e, $"Error processing {expectedType} request");
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }

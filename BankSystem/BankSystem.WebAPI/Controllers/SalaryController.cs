@@ -75,7 +75,7 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("from-bank")]
+        [HttpGet("bank")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
         [ProducesResponseType(typeof(IReadOnlyCollection<Salary>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -84,7 +84,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"from-bank\")");
+                _logger.LogInformation($"HttpGet(\"bank\")");
 
                 int userId;
                 try { userId = GetUserId(); }
@@ -103,7 +103,7 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("of-enterprise/{enterpriseId:int}")]
+        [HttpGet("enterprise/{enterpriseId:int}")]
         [Authorize(Roles = "ExternalSpecialist,Operator,Manager,Administrator")]
         [ProducesResponseType(typeof(IReadOnlyCollection<Salary>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -113,7 +113,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"of-enterprise/{enterpriseId}\")");
+                _logger.LogInformation($"HttpGet(\"enterprise/{enterpriseId}\")");
 
                 int userId;
                 try { userId = GetUserId(); }
@@ -144,7 +144,7 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("of-user/{userId:int}")]
+        [HttpGet("user/{userId:int}")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
         [ProducesResponseType(typeof(IReadOnlyCollection<Salary>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -154,7 +154,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"of-user/{userId}\")");
+                _logger.LogInformation($"HttpGet(\"user/{userId}\")");
 
                 int adminId;
                 try { adminId = GetUserId(); }
@@ -178,7 +178,7 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("my-salaries")]
+        [HttpGet("my")]
         [Authorize(Roles = "Client")]
         [ProducesResponseType(typeof(IReadOnlyCollection<Salary>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -187,7 +187,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"my-salaries\")");
+                _logger.LogInformation($"HttpGet(\"my\")");
                 int userId;
                 try { userId = GetUserId(); }
                 catch (Exception) { return BadRequest("Invalid user ID."); }
@@ -302,7 +302,7 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpDelete("of-enterprise/{enterpriseId:int}")]
+        [HttpDelete("enterprise/{enterpriseId:int}")]
         [Authorize(Roles = "ExternalSpecialist,Operator,Manager,Administrator")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -312,7 +312,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation($"HttpDelete(\"of-enterprise/{enterpriseId}\")");
+                _logger.LogInformation($"HttpDelete(\"enterprise/{enterpriseId}\")");
 
                 int userId;
                 try { userId = GetUserId(); }

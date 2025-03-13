@@ -10,6 +10,6 @@ namespace BankSystem.BankClient.Abstractions.ServiceInterfaces
     public interface IUserService
     {
         Task<User?> GetUserAsync(int userId);
-        Task<IReadOnlyCollection<User>> GetUsersAsync(int bankId);
+        Task<IReadOnlyCollection<User>> GetUsersByBankIdAsync(int bankId);
     }
 }

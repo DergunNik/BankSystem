@@ -66,7 +66,7 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("from-bank")]
+        [HttpGet("bank")]
         [Authorize(Roles = "Operator,Manager,Administrator")]
         [ProducesResponseType(typeof(IReadOnlyCollection<Transfer>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -76,7 +76,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation($"HttpGet(\"from-bank\")");
+                _logger.LogInformation($"HttpGet(\"bank\")");
 
                 int userId;
                 try { userId = GetUserId(); }
@@ -129,7 +129,7 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("of-user/{userId:int}")]
+        [HttpGet("user/{userId:int}")]
         [Authorize(Roles = "Client")]
         [ProducesResponseType(typeof(IReadOnlyCollection<Transfer>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -138,7 +138,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation("HttpGet(\"my-transfers\")");
+                _logger.LogInformation("HttpGet(\"user\")");
 
                 int adminId;
                 try { adminId = GetUserId(); }
@@ -164,7 +164,7 @@ namespace BankSystem.WebAPI.Controllers
             }
         } 
 
-        [HttpGet("my-transfers")]
+        [HttpGet("my")]
         [Authorize(Roles = "Client")]
         [ProducesResponseType(typeof(IReadOnlyCollection<Transfer>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -173,7 +173,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation("HttpGet(\"my-transfers\")");
+                _logger.LogInformation("HttpGet(\"my\")");
 
                 int userId;
                 try { userId = GetUserId(); }

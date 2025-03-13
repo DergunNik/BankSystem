@@ -1,0 +1,653 @@
+﻿@startuml
+
+'-------------------------------------------
+' Domain
+'-------------------------------------------
+package Domain {
+
+  package Abstractions {
+
+    interface IRepository<T> {
+      + GetByIdAsync(id: int, cancellationToken: CancellationToken = default, includesProperties: Expression<Func<T, object>>[]?) : Task<T?>
+      + ListAsync(filter: Expression<Func<T, bool>>, cancellationToken: CancellationToken = default, includesProperties: Expression<Func<T, object>>[]?) : Task<IReadOnlyList<T>>
+      + ListAllAsync(cancellationToken: CancellationToken = default) : Task<IReadOnlyList<T>>
+      + AddAsync(entity: T, cancellationToken: CancellationToken = default) : Task
+      + UpdateAsync(entity: T, cancellationToken: CancellationToken = default) : Task
+      + DeleteAsync(entity: T, cancellationToken: CancellationToken = default) : Task
+      + FirstOrDefaultAsync(filter: Expression<Func<T, bool>>, cancellationToken: CancellationToken = default) : Task<T?>
+    }
+
+    interface IUnitOfWork {
+      + GetRepository<T>() : IRepository<T>
+      + BeginTransaction() : void
+      + CommitTransactionAsync() : Task
+      + RollbackTransactionAsync() : Task
+      + DeleteDataBaseAsync() : Task
+      + CreateDataBaseAsync() : Task
+    }
+
+    package ServiceInterfaces {
+
+      interface IAccountService {
+        + CreateAccountAsync(account: Account) : Task
+        + GetAccountAsync(accountId: int) : Task<Account?>
+        + ApplyMonthlyInterestAsync(accountId: int) : Task
+        + DeleteAccountAsync(accountId: int) : Task
+        + BlockAccountAsync(accountId: int) : Task
+        + UnblockAccountAsync(accountId: int) : Task
+        + FreezeAccountAsync(accountId: int) : Task
+        + UnfreezeAccountAsync(accountId: int) : Task
+        + GetAccountTransfersAsync(accountId: int) : Task<(IReadOnlyCollection<Transfer>, IReadOnlyCollection<BankTransfer>)>
+        + GetAccountFromBankAsync(bankId: int) : Task<IReadOnlyCollection<Account>>
+        + GetUserAccountsAsync(userId: int) : Task<IReadOnlyCollection<Account>>
+        + CanWithdrawFrom(account: Account) : bool
+        + CanDepositTo(account: Account) : bool
+      }
+
+      interface IAuthService {
+        + RegisterAsync(user: User) : Task
+        + LoginAsync(email: string, password: string, bankId: int) : Task<string>
+      }
+
+      interface IBankReserveService {
+        + TransferToBankAsync(accountId: int, bankReserveId: int, amount: decimal, entity: Entity?) : Task
+        + TransferFromBankAsync(accountId: int, bankReserveId: int, amount: decimal, entity: Entity?) : Task
+        + TransferToAccountBankAsync(accountId: int, amount: decimal, entity: Entity?) : Task
+        + TransferFromAccountBankAsync(accountId: int, amount: decimal, entity: Entity?) : Task
+        + GetMoneyFromStateBankAsync(bankReserveId: int, amount: decimal) : Task
+        + GetBankTransferAsync(id: int) : Task<BankTransfer?>
+        + GetUserBankTransfersAsync(id: int) : Task<IReadOnlyList<BankTransfer>>
+      }
+
+      interface IBankService {
+        + DoesBankWithIdExistAsync(id: int) : Task<bool>
+        + AddBankAsync(bank: Bank) : Task
+        + GetBankByIdAsync(id: int) : Task<Bank?>
+        + GetAllBanksAsync() : Task<IReadOnlyList<Bank>>
+      }
+
+      interface ICanselRestorationService {
+        + RestoreCansellationAsync(canselId: int) : Task
+        + GetCanselAsync(id: int) : Task<Cansel?>
+        + GetCanselsFromBankAsync(bankId: int) : Task<IReadOnlyList<Cansel>>
+      }
+
+      interface ICreditCansellationService {
+        + CanselCreditAsync(creditId: int) : Task
+      }
+
+      interface ICreditService {
+        + InitCreditAsync(creditId: int) : Task
+        + PayCreditAsync(creditId: int, accountId: int, amount: decimal) : Task
+        + HandleTodaysCreditPaymentsAsync() : Task
+        + GetCreditAsync(id: int) : Task<Credit?>
+        + GetCreditsByUserIdAsync(userId: int) : Task<IReadOnlyList<Credit>>
+        + GetCreditsByUserIdAsync(userId: int, isPaid: bool) : Task<IReadOnlyList<Credit>>
+        + GetCreditsOfBankAsync(bankId: int) : Task<IReadOnlyList<Credit>>
+      }
+
+      interface IEnterpriseService {
+        + AddExternalSpecialistAsync(userId: int, enterpriseId: int) : Task
+        + RemoveExternalSpecialistAsync(userId: int) : Task
+        + GetExternalSpecialistEnterpriseAsync(userId: int) : Task<Enterprise?>
+        + GetEnterpriseAsync(enterpriseId: int) : Task<Enterprise?>
+        + GetBankEnterprisesAsync(bankId: int) : Task<IReadOnlyList<Enterprise>>
+      }
+
+      interface IJwtService {
+        + GenerateToken(user: User) : string
+      }
+
+      interface IRequestService {
+        + CreateRequestAsync(requestTarget: IRequestable) : Task
+        + ApproveRequestAsync(request: Request) : Task
+        + RejectRequestAsync(request: Request) : Task
+        + GetRequestsAsync(requestType: RequestType, bankId: int) : Task<IReadOnlyCollection<Request>>
+        + GetRequestEntityAsync(request: Request) : Task<IRequestable>
+        + GetRequestByIdAsync(id: int) : Task<Request?>
+      }
+
+      interface ISalaryService {
+        + AddSalaryAsync(UserAccountId: int, salaryProjectId: int, amount: decimal) : Task
+        + RemoveSalaryAsync(salaryId: int) : Task
+        + GetSalaryAsync(salaryId: int) : Task<Salary?>
+        + GetSalaryProjectAsync(projectId: int) : Task<SalaryProject?>
+        + GetSalariesFromBankAsync(bankId: int) : Task<IReadOnlyCollection<Salary>>
+        + GetEnterpriseSalariesAsync(enterpriseId: int) : Task<IReadOnlyCollection<Salary>>
+        + GetUserSalariesAsync(userId: int) : Task<IReadOnlyCollection<Salary>>
+        + HandleTodaysSalariesAsync() : Task
+      }
+
+      interface ITransferCansellationService {
+        + CanselTransferAsync(transferId: int) : Task
+      }
+
+      interface ITransferService {
+        + TransferAsync(sourceAccountId: int, destinationAccountId: int, amount: decimal) : Task
+        + GetTransferAsync(transferId: int) : Task<Transfer?>
+        + GetTransferFromBank(bankId: int) : Task<IReadOnlyList<Transfer>>
+        + GetUserTransfersAsync(userId: int) : Task<IReadOnlyList<Transfer>>
+      }
+
+      interface IUserService {
+        + GetUserAsync(userId: int) : Task<User?>
+        + GetUsersAsync(bankId: int) : Task<IReadOnlyCollection<User>>
+      }
+      
+    } 
+
+  } 
+
+package Entities {
+
+  interface IRequestable {
+    + Id : int
+    + IsApproved : bool
+    + RequestDate : DateTime
+    + AnswerDate : DateTime
+    + BankId : int
+  }
+
+  interface ICansellable {
+    + IsCanselled : bool
+  }
+
+  ' Base Entities
+  class Entity {
+    + Id : int
+  }
+
+  class BankRelatedEntity extends Entity {
+    + BankId : int
+  }
+
+  class Account extends BankRelatedEntity {
+    + Balance : decimal
+    + OwnerId : int
+    + IsBlocked : bool
+    + IsFrozen : bool
+    + IsSavingAccount : bool
+    + MonthlyInterestRate : decimal
+    + CreationDate : DateTime
+    + SavingsAccountUntil : DateTime
+    + OwnerType : AccountOwnerType
+  }
+
+  class Bank extends Entity {
+    + Address : string
+    + BIC : string
+    + LegalName : string
+  }
+
+  class BankReserve extends BankRelatedEntity {
+    + Balance : decimal
+  }
+
+  class BankTransfer extends BankRelatedEntity {
+    + BankReserveId : int
+    + AccountId : int
+    + IsIncomingToBank : bool
+    + Amount : decimal
+    + TransferDate : DateTime
+  }
+
+  class Cansel extends BankRelatedEntity implements ICansellable {
+    + CansellationType : CansellationType
+    + CanselledEntityId : int
+    + CansellationDate : DateTime
+    + IsCanselled : bool
+  }
+
+  class Credit extends BankRelatedEntity implements IRequestable, ICansellable {
+    + CreditAmount : decimal
+    + TotalAmount : decimal
+    + PaidAmount : decimal
+    + IsApproved : bool
+    + IsPaid : bool
+    + IsCanselled : bool
+    + RequestDate : DateTime
+    + AnswerDate : DateTime
+    + DurationInMonths : int
+    + UserId : int
+    + AccountId : int
+    + Reason : string
+    + InterestRate : decimal
+  }
+
+  class Enterprise extends BankRelatedEntity {
+    + OrganizationType : LegalEntityType
+    + LegalName : string
+    + TaxpayerIdentificationNumber : string
+    + BankIdentifierCode : string
+    + LegalAddress : string
+  }
+
+  class ExternalSpecialist extends BankRelatedEntity {
+    + EnterpriseId : int
+    + SpecielistId : int
+  }
+
+  class Request extends BankRelatedEntity {
+    + SenderId : int
+    + RequestType : RequestType
+    + IsChecked : bool
+    + RequestEntityId : int
+  }
+
+  class Salary extends BankRelatedEntity implements IRequestable {
+    + Amount : decimal
+    + UserAccountId : int
+    + SalaryProjectId : int
+    + IsApproved : bool
+    + RequestDate : DateTime
+    + AnswerDate : DateTime
+  }
+
+  class SalaryProject extends BankRelatedEntity implements IRequestable {
+    + IsApproved : bool
+    + RequestDate : DateTime
+    + AnswerDate : DateTime
+    + SalaryDate : DateTime
+    + EnterpriseId : int
+    + EnterpriseAccountId : int
+    + Details : string
+  }
+
+  class Transfer extends BankRelatedEntity implements ICansellable {
+    + SourceAccountId : int
+    + DestinationAccountId : int
+    + IsCanselled : bool
+    + Amount : decimal
+    + TransferDate : DateTime
+  }
+
+  class User extends BankRelatedEntity implements IRequestable {
+    + FullName : string
+    + PassportSeriesAndNumber : string
+    + IdentificationNumber : string
+    + Phone : string
+    + Email : string
+    + IsActive : bool
+    + IsApproved : bool
+    + UserRole : UserRole
+    + RequestDate : DateTime
+    + AnswerDate : DateTime
+    + PasswordHash : string
+  }
+
+}
+
+package Enums {
+
+  enum AccountOwnerType {
+    IndividualUser
+    Enterprise
+  }
+
+  enum CansellationType {
+    Transfer
+    Credit
+  }
+
+  enum RequestType {
+    Credit
+    User
+    SalaryProject
+    Salary
+  }
+
+  enum LegalEntityType {
+    SoleProprietorship
+    LimitedLiabilityCompany
+    ClosedJointStockCompany
+    OpenJointStockCompany
+    PublicOrganization
+    PrivateJointStockCompany
+  }
+
+  enum UserRole {
+    Client
+    Operator
+    Manager
+    ExternalSpecialist
+    Administrator
+    BannedOrNotExisting
+  }
+
+} 
+
+} 
+
+'-------------------------------------------
+' Infrastructure
+'-------------------------------------------
+package Infrastructure {
+
+  package Daemons {
+    class CreditDaemon {
+      - serviceScopeFactory : IServiceScopeFactory
+      - logger : ILogger<CreditDaemon>
+      + ExecuteAsync(stoppingToken: CancellationToken) : Task
+    }
+
+    class SalaryDaemon {
+      - serviceScopeFactory : IServiceScopeFactory
+      - logger : ILogger<SalaryDaemon>
+      + ExecuteAsync(stoppingToken: CancellationToken) : Task
+    }
+  }
+
+  package Middlewares {
+    class RequestLoggingMiddleware {
+      - next : RequestDelegate
+      - logger : ILogger<RequestLoggingMiddleware>
+      + InvokeAsync(context: HttpContext) : Task
+    }
+  }
+
+  package Persistence {
+
+    package Data {
+      class AppDbContext extends DbContext {
+        + Accounts : DbSet<Account>
+        + Banks : DbSet<Bank>
+        + BankReserves : DbSet<BankReserve>
+        + BankTransfers : DbSet<BankTransfer>
+        + Cansels : DbSet<Cansel>
+        + Credits : DbSet<Credit>
+        + Enterprises : DbSet<Enterprise>
+        + ExternalSpecialists : DbSet<ExternalSpecialist>
+        + Requests : DbSet<Request>
+        + Salaries : DbSet<Salary>
+        + SalaryProjects : DbSet<SalaryProject>
+        + Transfers : DbSet<Transfer>
+        + Users : DbSet<User>
+        + GetDbSet<T>() : DbSet<T>?
+      }
+    }
+
+    package Repositories {
+      class EfRepository<T> implements IRepository<T> {
+        - context : AppDbContext
+        - entities : DbSet<T>
+        + AddAsync(entity: T, cancellationToken: CancellationToken) : Task
+        + DeleteAsync(entity: T, cancellationToken: CancellationToken) : Task
+        + FirstOrDefaultAsync(filter: Expression<Func<T, bool>>, cancellationToken: CancellationToken) : Task<T?>
+        + GetByIdAsync(id: int, cancellationToken: CancellationToken, includesProperties: Expression<Func<T,object>>[]?) : Task<T?>
+        + ListAllAsync(cancellationToken: CancellationToken) : Task<IReadOnlyList<T>>
+        + ListAsync(filter: Expression<Func<T, bool>>, cancellationToken: CancellationToken, includesProperties: Expression<Func<T,object>>[]?) : Task<IReadOnlyList<T>>
+        + UpdateAsync(entity: T, cancellationToken: CancellationToken) : Task
+      }
+    }
+
+    package Settings {
+      class DbConnectionSettings {
+        + SqliteConnection : string
+      }
+    }
+
+    package UnitOfWork {
+      class EfUnitOfWork implements IUnitOfWork {
+        - context : AppDbContext
+        - repositories : ConcurrentDictionary<Type, object>
+        - currentTransaction : IDbContextTransaction?
+        + GetRepository<T>() : IRepository<T>
+        + CreateDataBaseAsync() : Task
+        + DeleteDataBaseAsync() : Task
+        + BeginTransaction() : void
+        + CommitTransactionAsync() : Task
+        + RollbackTransactionAsync() : Task
+      }
+    }
+
+  }
+
+  package Common {
+    class DependencyInjection {
+      + AddInfrastructure(services: IServiceCollection, configuration: IConfiguration) : IServiceCollection
+    }
+  }
+
+}
+
+
+'-------------------------------------------
+' Application
+'-------------------------------------------
+package Application {
+
+  package Settings {
+    class AuthSettings {
+      + ExpirationTime : TimeSpan
+      + SecretKey : string
+    }
+
+    class AuthExtensions <<static>> {
+      + AddAuth(servicesCollection: IServiceCollection, configuration: IConfiguration) : IServiceCollection
+    }
+  }
+
+  class DbInitializer <<static>> {
+    + Initialize(services: IServiceProvider) : Task
+  }
+
+  class DependencyInjection <<static>> {
+    + AddApplication(services: IServiceCollection, configuration: IConfiguration) : IServiceCollection
+  }
+
+  package Services {
+
+    class AccountService implements IAccountService {
+      - _unitOfWork : IUnitOfWork
+      - _logger : ILogger<AccountService>
+      - _bankReserveService : IBankReserveService
+      + AccountService(unitOfWork: IUnitOfWork, logger: ILogger<AccountService>, bankReserveService: IBankReserveService)
+      + CreateAccountAsync(account: Account) : Task
+      + DeleteAccountAsync(accountId: int) : Task
+      + GetAccountAsync(accountId: int) : Task<Account?>
+      + ApplyMonthlyInterestAsync(accountId: int) : Task
+      + BlockAccountAsync(accountId: int) : Task
+      + FreezeAccountAsync(accountId: int) : Task
+      + UnblockAccountAsync(accountId: int) : Task
+      + UnfreezeAccountAsync(accountId: int) : Task
+      + GetAccountTransfersAsync(accountId: int) : Task<(IReadOnlyCollection<Transfer>, IReadOnlyCollection<BankTransfer>)>
+      + GetAccountFromBankAsync(bankId: int) : Task<IReadOnlyCollection<Account>>
+      + GetUserAccountsAsync(userId: int) : Task<IReadOnlyCollection<Account>>
+      + CanWithdrawFrom(account: Account) : bool
+      + CanDepositTo(account: Account) : bool
+    }
+
+    class AuthService implements IAuthService {
+      - _unitOfWork : IUnitOfWork
+      - _jwtService : IJwtService
+      - _bankService : IBankService
+      - _requestService : IRequestService
+      - _logger : ILogger<AuthService>
+      + AuthService(unitOfWork: IUnitOfWork, jwtService: IJwtService, bankService: IBankService, requestService: IRequestService, logger: ILogger<AuthService>)
+      + LoginAsync(email: string, password: string, bankId: int) : Task<string>
+      + RegisterAsync(user: User) : Task
+    }
+
+    class BankReserveService implements IBankReserveService {
+      - _unitOfWork : IUnitOfWork
+      - _logger : ILogger<BankReserveService>
+      + BankReserveService(unitOfWork: IUnitOfWork, logger: ILogger<BankReserveService>)
+      + GetMoneyFromStateBankAsync(bankReserveId: int, amount: decimal) : Task
+      + TransferFromBankAsync(accountId: int, bankReserveId: int, amount: decimal, entity: Entity?) : Task
+      + TransferFromAccountBankAsync(accountId: int, amount: decimal, entity: Entity?) : Task
+      + TransferToBankAsync(accountId: int, bankReserveId: int, amount: decimal, entity: Entity?) : Task
+      + TransferToAccountBankAsync(accountId: int, amount: decimal, entity: Entity?) : Task
+      + GetBankTransferAsync(id: int) : Task<BankTransfer?>
+      + GetUserBankTransfersAsync(userId: int) : Task<IReadOnlyList<BankTransfer>>
+    }
+
+    class BankService implements IBankService {
+      - _unitOfWork : IUnitOfWork
+      - _logger : ILogger<BankService>
+      + BankService(unitOfWork: IUnitOfWork, logger: ILogger<BankService>)
+      + AddBankAsync(bank: Bank) : Task
+      + DoesBankWithIdExistAsync(id: int) : Task<bool>
+      + GetBankByIdAsync(id: int) : Task<Bank?>
+      + GetAllBanksAsync() : Task<IReadOnlyList<Bank>>
+    }
+
+    class CanselRestorationService implements ICanselRestorationService {
+      - _unitOfWork : IUnitOfWork
+      - _transferService : ITransferService
+      - _creditService : ICreditService
+      - _logger : ILogger<CanselRestorationService>
+      + CanselRestorationService(unitOfWork: IUnitOfWork, transferService: ITransferService, creditService: ICreditService, logger: ILogger<CanselRestorationService>)
+      + RestoreCansellationAsync(canselId: int) : Task
+      + GetCanselAsync(id: int) : Task<Cansel?>
+      + GetCanselsFromBankAsync(bankId: int) : Task<IReadOnlyList<Cansel>>
+    }
+
+    class CreditCansellationService implements ICreditCansellationService {
+      - _unitOfWork : IUnitOfWork
+      - _bankReserveService : IBankReserveService
+      - _logger : ILogger<CreditCansellationService>
+      + CreditCansellationService(unitOfWork: IUnitOfWork, bankReserveService: IBankReserveService, logger: ILogger<CreditCansellationService>)
+      + CanselCreditAsync(creditId: int) : Task
+    }
+
+    class CreditService implements ICreditService {
+      - _unitOfWork : IUnitOfWork
+      - _bankReserveService : IBankReserveService
+      - _accountService : IAccountService
+      - _logger : ILogger<CreditService>
+      + CreditService(unitOfWork: IUnitOfWork, bankReserveService: IBankReserveService, accountService: IAccountService, logger: ILogger<CreditService>)
+      + InitCreditAsync(creditId: int) : Task
+      + PayCreditAsync(creditId: int, accountId: int, amount: decimal) : Task
+      + GetCreditAsync(id: int) : Task<Credit?>
+      + GetCreditsByUserIdAsync(userId: int) : Task<IReadOnlyList<Credit>>
+      + GetCreditsByUserIdAsync(userId: int, isPaid: bool) : Task<IReadOnlyList<Credit>>
+      + GetCreditsOfBankAsync(bankId: int) : Task<IReadOnlyList<Credit>>
+      + HandleTodaysCreditPaymentsAsync() : Task
+    }
+
+    class EnterpriseService implements IEnterpriseService {
+      - _unitOfWork : IUnitOfWork
+      - _logger : ILogger<EnterpriseService>
+      + EnterpriseService(unitOfWork: IUnitOfWork, logger: ILogger<EnterpriseService>)
+      + AddExternalSpecialistAsync(userId: int, enterpriseId: int) : Task
+      + RemoveExternalSpecialistAsync(userId: int) : Task
+      + GetExternalSpecialistEnterpriseAsync(userId: int) : Task<Enterprise?>
+      + GetEnterpriseAsync(enterpriseId: int) : Task<Enterprise?>
+      + GetBankEnterprisesAsync(bankId: int) : Task<IReadOnlyList<Enterprise>>
+    }
+
+    class JwtService implements IJwtService {
+      - _options : IOptions<AuthSettings>
+      - _logger : ILogger<JwtService>
+      + JwtService(options: IOptions<AuthSettings>, logger: ILogger<JwtService>)
+      + GenerateToken(user: User) : string
+    }
+
+    class RequestService implements IRequestService {
+      - _unitOfWork : IUnitOfWork
+      - _creditService : ICreditService
+      - _logger : ILogger<RequestService>
+      + RequestService(unitOfWork: IUnitOfWork, creditService: ICreditService, logger: ILogger<RequestService>)
+      + ApproveRequestAsync(request: Request) : Task
+      + RejectRequestAsync(request: Request) : Task
+      + CreateRequestAsync(requestTarget: IRequestable) : Task
+      + GetRequestsAsync(requestType: RequestType, bankId: int) : Task<IReadOnlyCollection<Request>>
+      + GetRequestEntityAsync(request: Request) : Task<IRequestable>
+      + GetRequestByIdAsync(id: int) : Task<Request?>
+    }
+
+    class SalaryService implements ISalaryService {
+      - _unitOfWork : IUnitOfWork
+      - _transferService : ITransferService
+      - _logger : ILogger<SalaryService>
+      + SalaryService(unitOfWork: IUnitOfWork, transferService: ITransferService, logger: ILogger<SalaryService>)
+      + AddSalaryAsync(userAccountId: int, salaryProjectId: int, amount: decimal) : Task
+      + RemoveSalaryAsync(salaryId: int) : Task
+      + GetSalaryAsync(salaryId: int) : Task<Salary?>
+      + GetSalaryProjectAsync(projectId: int) : Task<SalaryProject?>
+      + GetSalariesFromBankAsync(bankId: int) : Task<IReadOnlyCollection<Salary>>
+      + GetEnterpriseSalariesAsync(enterpriseId: int) : Task<IReadOnlyCollection<Salary>>
+      + GetUserSalariesAsync(userId: int) : Task<IReadOnlyCollection<Salary>>
+      + HandleTodaysSalariesAsync() : Task
+    }
+
+    class TransferCansellationService implements ITransferCansellationService {
+      - _unitOfWork : IUnitOfWork
+      - _logger : ILogger<TransferCansellationService>
+      - _transferService : ITransferService
+      + TransferCansellationService(unitOfWork: IUnitOfWork, logger: ILogger<TransferCansellationService>, transferService: ITransferService)
+      + CanselTransferAsync(transferId: int) : Task
+    }
+
+    class TransferService implements ITransferService {
+      - _accountService : IAccountService
+      - _logger : ILogger<TransferService>
+      - _unitOfWork : IUnitOfWork
+      + TransferService(accountService: IAccountService, logger: ILogger<TransferService>, unitOfWork: IUnitOfWork)
+      + TransferAsync(sourceAccountId: int, destinationAccountId: int, amount: decimal) : Task
+      + GetTransferAsync(transferId: int) : Task<Transfer?>
+      + GetTransferFromBank(bankId: int) : Task<IReadOnlyList<Transfer>>
+      + GetUserTransfersAsync(userId: int) : Task<IReadOnlyList<Transfer>>
+    }
+
+    class UserService implements IUserService {
+      - _unitOfWork : IUnitOfWork
+      + UserService(unitOfWork: IUnitOfWork)
+      + GetUserAsync(userId: int) : Task<User?>
+      + GetUsersAsync(bankId: int) : Task<IReadOnlyCollection<User>>
+    }
+
+  } 
+  
+}
+
+
+'-------------------------------------------
+' API
+'-------------------------------------------
+package API {
+
+    package Controlles {
+
+      class AccountController {
+        + AddAccountAsync(accountDto: AccountDto) : Task<ActionResult>
+        + HandleAccountBlockingAsync(accountId: int, isBlocked: bool) : Task<ActionResult>
+        + HandleAccountFreezingAsync(accountId: int, isFreezed: bool) : Task<ActionResult>
+        + GetAccountAsync(accountId: int) : Task<ActionResult<Account>>
+        + GetAccountsAsync() : Task<ActionResult<List<Account>>>
+        + GetMyAccountsAsync() : Task<ActionResult<List<Account>>>
+      }
+
+      class AuthController {
+        + RegisterAsync(user: User) : Task<ActionResult>
+        + LoginAsync(args: LoginRequestDto) : Task<ActionResult>
+      }
+
+      class BankController {
+        + GetBanks() : ActionResult<IReadOnlyList<Bank>>
+      }
+
+      class CanselController {
+        + CanselCreditAsync(id: int) : Task<IActionResult>
+        + CanselTransferAsync(id: int) : Task<IActionResult>
+        + RestoreCanselAsync(id: int) : Task<IActionResult>
+        + GetCanselAsync(id: int) : Task<IActionResult>
+        + GetCanselFromBankAsync() : Task<IActionResult>
+      }
+
+      class CreditController {
+        + GetCreditAsync(creditDto: CreditDto) : Task<ActionResult<Credit>>
+        + GetCreditAsync(id: int) : Task<ActionResult<Credit>>
+        + GetCreditFromBankAsync() : Task<ActionResult<IReadOnlyList<Credit>>>
+        + GetCreditAsync() : Task<ActionResult<IReadOnlyList<Credit>>>
+      }
+
+      class EnterpriseController {
+        + GetEnterprises() : Task<ActionResult<IReadOnlyList<Enterprise>>>
+      }
+
+    } 
+
+  }
+
+@enduml

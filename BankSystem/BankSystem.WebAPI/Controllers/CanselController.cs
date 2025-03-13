@@ -168,7 +168,7 @@ namespace BankSystem.WebAPI.Controllers
             }
         }
 
-        [HttpGet("cansel/from-bank")]
+        [HttpGet("cansel/bank")]
         [ProducesResponseType(typeof(IReadOnlyCollection<Cansel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -176,7 +176,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation("HttpGet(\"cansel/from-bank\")");
+                _logger.LogInformation("HttpGet(\"cansel/bank\")");
 
                 int userId;
                 try { userId = GetUserId(); }

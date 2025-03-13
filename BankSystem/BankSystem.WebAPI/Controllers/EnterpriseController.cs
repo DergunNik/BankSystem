@@ -25,7 +25,7 @@ namespace BankSystem.WebAPI.Controllers
             _userService = userService;
         }
 
-        [HttpGet("of-bank")]
+        [HttpGet("bank")]
         [Authorize]
         [ProducesResponseType(typeof(IReadOnlyList<Enterprise>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -33,7 +33,7 @@ namespace BankSystem.WebAPI.Controllers
         {
             try
             {
-                _logger.LogInformation("GetEnterprises");
+                _logger.LogInformation("HttpGet(\"bank\")");
 
                 int userId;
                 try { userId = GetUserId(); }
@@ -47,7 +47,7 @@ namespace BankSystem.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "GetEnterprises");
+                _logger.LogError(e, "HttpGet(\"bank\")");
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
