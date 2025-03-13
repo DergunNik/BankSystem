@@ -11,7 +11,7 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 using BankSystem.BankClient.Abstractions.ServiceInterfaces;
 
-namespace BankSystem.Aplication.Services
+namespace BankSystem.Application.Services
 {
     public class AuthService : IAuthService
     {

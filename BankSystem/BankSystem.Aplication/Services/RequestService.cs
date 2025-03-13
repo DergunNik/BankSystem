@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Aplication.Services
+namespace BankSystem.Application.Services
 {
     public class RequestService : IRequestService
     {

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace BankSystem.Aplication.Services
+namespace BankSystem.Application.Services
 {
     public class SalaryService : ISalaryService
     {

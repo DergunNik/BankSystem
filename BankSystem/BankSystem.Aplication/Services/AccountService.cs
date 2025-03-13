@@ -11,7 +11,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Aplication.Services
+namespace BankSystem.Application.Services
 {
     public class AccountService : IAccountService
     {

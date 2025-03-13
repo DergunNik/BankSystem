@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Aplication.Services
+namespace BankSystem.Application.Services
 {
     public class UserService : IUserService
     {
@@ -22,7 +22,7 @@ namespace BankSystem.Aplication.Services
             return await _unitOfWork.GetRepository<User>().GetByIdAsync(userId);
         }
 
-        public async Task<IReadOnlyCollection<User>> GetUsersAsync(int bankId)
+        public async Task<IReadOnlyCollection<User>> GetUsersByBankIdAsync(int bankId)
         {
             return await _unitOfWork.GetRepository<User>().ListAsync(u => u.BankId == bankId);
         }

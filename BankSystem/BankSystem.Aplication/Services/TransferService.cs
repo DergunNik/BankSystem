@@ -11,7 +11,7 @@ using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Aplication.Services
+namespace BankSystem.Application.Services
 {
     public class TransferService : ITransferService
     {

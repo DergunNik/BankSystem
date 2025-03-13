@@ -1,4 +1,4 @@
-﻿using BankSystem.Aplication.Settings;
+﻿using BankSystem.Application.Settings;
 using BankSystem.BankClient.Abstractions.ServiceInterfaces;
 using BankSystem.BankClient.Models;
 using Microsoft.Extensions.Logging;
@@ -12,7 +12,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankSystem.Aplication.Services
+namespace BankSystem.Application.Services
 {
     public class JwtService : IJwtService
     {

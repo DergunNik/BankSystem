@@ -1,4 +1,4 @@
-﻿using BankSystem.Aplication.Services;
+﻿using BankSystem.Application.Services;
 using BankSystem.BankClient.Abstractions.ServiceInterfaces;
 using BankSystem.BankClient.Models;
 using Microsoft.AspNetCore.Authorization;

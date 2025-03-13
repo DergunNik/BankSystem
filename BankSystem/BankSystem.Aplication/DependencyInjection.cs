@@ -1,10 +1,10 @@
-﻿using BankSystem.Aplication.Services;
-using BankSystem.Aplication.Settings;
+﻿using BankSystem.Application.Services;
+using BankSystem.Application.Settings;
 using BankSystem.BankClient.Abstractions.ServiceInterfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BankSystem.Aplication
+namespace BankSystem.Application
 {
     public static class DependencyInjection
     {
